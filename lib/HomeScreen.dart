@@ -4,10 +4,9 @@ import 'package:flutter/services.dart';
 import 'taskpage.dart';
 import 'eventspage.dart';
 import 'financepage.dart';
-import 'EventDetailsPage.dart';
+import 'Events/EventDetailsPage.dart';
 
 void main() {
-  // Set transparent status bar with dark icons
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -45,30 +44,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Current selected index for bottom navigation
+  // Indeks halaman yang dipilih pada navigasi bawah
   int _selectedIndex = 0;
 
-  // Handle bottom navigation item taps
+  // Fungsi untuk menangani navigasi saat item di navigasi bawah ditekan
   void _onNavigationItemTapped(int index) {
     if (index != _selectedIndex) {
-      // Navigate to the appropriate page based on index
       switch (index) {
         case 0:
-          // Already on home page, do nothing
+          // Sudah di halaman Home, tidak melakukan apa-apa
           break;
         case 1:
+        // Navigasi ke halaman Task
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const TaskPage()),
           );
           break;
         case 2:
+        // Navigasi ke halaman Events
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const EventsPage()),
           );
           break;
         case 3:
+        // Navigasi ke halaman Finance
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const FinancePage()),
@@ -99,14 +100,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Header with notification bell and profile picture
+  // Widget untuk header dengan ikon notifikasi dan foto profil
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Notification bell with badge
+          // Ikon notifikasi dengan badge
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -119,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: const Icon(Icons.notifications_outlined),
                   onPressed: () {},
                 ),
-                // Red notification badge
+                // Badge merah untuk notifikasi
                 Positioned(
                   right: 10,
                   top: 10,
@@ -136,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          // User profile picture
+          // Foto profil pengguna
           Container(
             width: 40,
             height: 40,
@@ -144,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: Colors.grey.shade200),
               image: const DecorationImage(
-                image: NetworkImage('https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+                image: NetworkImage('https://randomuser.me/api/portraits/women/44.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -154,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // User greeting section
+  // Widget untuk salam pengguna
   Widget _buildGreeting() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -181,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Horizontal scrollable summary cards
+  // Widget untuk menampilkan kartu ringkasan secara horizontal
   Widget _buildSummaryCards() {
     return SizedBox(
       height: 110,
@@ -221,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Section header with title and navigation arrows
+  // Widget untuk header setiap bagian dengan judul dan tombol navigasi
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
@@ -258,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Upcoming events section
+  // Widget untuk menampilkan event yang akan datang
   Widget _buildUpcomingEvents() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,13 +297,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Upcoming tasks section with task details
+  // Widget untuk menampilkan tugas yang akan datang
   Widget _buildUpcomingTasks() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Upcoming Task'),
-        // Task today header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
@@ -388,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Bottom navigation bar
+  // Widget untuk navigasi bawah
   Widget _buildBottomNavigation() {
     return SafeArea(
       child: Container(
@@ -418,7 +418,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Individual navigation item
+  // Widget untuk item navigasi bawah
   Widget _buildNavItem(int index, IconData icon, String label, bool isSelected) {
     return InkWell(
       onTap: () {

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_idspora/Events/add_events.dart';
+import 'package:flutter_application_idspora/landingPage.dart';
 import 'HomeScreen.dart';
 import 'TaskPage.dart';
 import 'EventsPage.dart';
@@ -19,12 +21,14 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white, // Warna latar belakang default
       ),
-      initialRoute: '/home', // Rute awal aplikasi
+      initialRoute: '/landing', // Rute awal aplikasi
       routes: {
+        '/landing': (context) => const LandingPage(),
         '/home': (context) => const HomeScreen(),
         '/task': (context) => const TaskPage(),
         '/event': (context) => const EventsPage(),
         '/finance': (context) => const FinancePage(),
+        '/add_events': (context) => const AddEvents(),
       },
       debugShowCheckedModeBanner: false, // Hilangkan banner debug
     );

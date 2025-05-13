@@ -1,21 +1,76 @@
 import 'package:flutter/material.dart';
-import 'homescreen.dart';
-import 'taskpage.dart';
-import 'financepage.dart';
-import 'eventdetailspage.dart';
+import 'Events/eventdetailspage.dart';
+import 'Events/add_events.dart';
 
-class EventsPage extends StatelessWidget {
+class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
+
+  @override
+  State<EventsPage> createState() => _EventsPageState();
+}
+
+class _EventsPageState extends State<EventsPage> {
+  // Data untuk event yang akan datang
+  final List<Map<String, String>> upcomingEvents = [
+    {
+      'title': 'Dari Wireframe ke Wow: Figma untuk Pemula UI/UX',
+      'category': 'UI/UX Design',
+      'date': '2025-05-04 pukul 03:38',
+      'venue': 'Aula FIT',
+      'capacity': '100 orang',
+      'speaker': 'Arya',
+      'mc': 'Stephanie',
+      'description': 'Pelajari dasar-dasar desain UI/UX menggunakan Figma.',
+      'status': 'Upcoming',
+      'imagePath':
+          'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    },
+  ];
+
+  // Data untuk event hari ini
+  final List<Map<String, String>> todayEvents = [
+    {
+      'title': 'Workshop Pengembangan Aplikasi Mobile',
+      'category': 'Development',
+      'date': '2025-05-07 pukul 10:00',
+      'venue': 'Online',
+      'capacity': '50 orang',
+      'speaker': 'Fathan',
+      'mc': 'Maria',
+      'description': 'Pelajari cara membangun aplikasi mobile dengan Flutter.',
+      'status': 'Today',
+      'imagePath':
+          'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    },
+  ];
+
+  // Data untuk event yang sudah berlalu
+  final List<Map<String, String>> pastEvents = [
+    {
+      'title': 'Konferensi Web Development',
+      'category': 'Development',
+      'date': '2025-04-15 pukul 09:00',
+      'venue': 'TUCH',
+      'capacity': '200 orang',
+      'speaker': 'Agvin',
+      'mc': 'Dini',
+      'description':
+          'Konferensi tahunan tentang pengembangan web yang membahas tren dan teknologi terbaru.',
+      'status': 'Past',
+      'imagePath':
+          'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Events'),
+        title: const Text('Events'), // Judul halaman
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back), // Tombol kembali
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context); // Kembali ke halaman sebelumnya
           },
         ),
       ),
@@ -25,94 +80,69 @@ class EventsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Filter tabs
+              // Tab filter untuk kategori event
               _buildFilterTabs(),
               const SizedBox(height: 20),
-              
-              // Upcoming events
+
+              // Menampilkan event yang akan datang
               const Text(
                 'Upcoming Events',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              
-              // Event list
-              _buildEventItem(
-                context,
-                title: 'From Wireframe to Wow: Figma for UI/UX Beginners',
-                category: 'UI/UX Design',
-                date: '2025-05-04 at 03:38',
-                venue: 'fit',
-                capacity: '100 people',
-                speaker: 'bapak bapak',
-                mc: 'mamak mamak',
-                description: 'Learn the basics of UI/UX design using Figma.',
-                status: 'Upcoming',
-                imagePath: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-              ),
-              
+              ...upcomingEvents.map((event) => _buildEventItem(context, event)),
+
               const SizedBox(height: 16),
-              
-              // Today events
+
+              // Menampilkan event hari ini
               const Text(
                 'Today Events',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              
-              _buildEventItem(
-                context,
-                title: 'Mobile App Development Workshop',
-                category: 'Development',
-                date: '2025-05-07 at 10:00',
-                venue: 'Online',
-                capacity: '50 people',
-                speaker: 'John Doe',
-                mc: 'Jane Smith',
-                description: 'Learn how to build mobile apps with Flutter.',
-                status: 'Today',
-                imagePath: 'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-              ),
-              
+              ...todayEvents.map((event) => _buildEventItem(context, event)),
+
               const SizedBox(height: 16),
-              
-              // Past events
+
+              // Menampilkan event yang sudah berlalu
               const Text(
                 'Past Events',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              
-              _buildEventItem(
-                context,
-                title: 'Web Development Conference',
-                category: 'Development',
-                date: '2025-04-15 at 09:00',
-                venue: 'Convention Center',
-                capacity: '200 people',
-                speaker: 'Sarah Johnson',
-                mc: 'Michael Brown',
-                description: 'Annual web development conference covering the latest trends and technologies.',
-                status: 'Past',
-                imagePath: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-              ),
+              ...pastEvents.map((event) => _buildEventItem(context, event)),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigation(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Navigasi ke halaman tambah event
+          final newEvent = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddEvents()),
+          );
+          if (newEvent != null && newEvent is Map<String, String>) {
+            // Menambahkan event baru ke kategori yang sesuai
+            setState(() {
+              if (newEvent['status'] == 'Upcoming') {
+                upcomingEvents.add(newEvent);
+              } else if (newEvent['status'] == 'Today') {
+                todayEvents.add(newEvent);
+              } else if (newEvent['status'] == 'Past') {
+                pastEvents.add(newEvent);
+              }
+            });
+          }
+        },
+        backgroundColor: Colors.amber, // Warna tombol tambah
+        child: const Icon(Icons.add, color: Colors.black), // Ikon tambah
+      ),
+      bottomNavigationBar: _buildBottomNavigation(context), // Navigasi bawah
     );
   }
 
+  // Widget untuk membuat tab filter
   Widget _buildFilterTabs() {
     return Container(
       height: 40,
@@ -122,6 +152,7 @@ class EventsPage extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Tab "All"
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -131,46 +162,32 @@ class EventsPage extends StatelessWidget {
               child: const Center(
                 child: Text(
                   'All',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
           ),
+          // Tab "Upcoming"
           Expanded(
             child: Container(
               child: const Center(
-                child: Text(
-                  'Upcoming',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
+                child: Text('Upcoming', style: TextStyle(color: Colors.grey)),
               ),
             ),
           ),
+          // Tab "Today"
           Expanded(
             child: Container(
               child: const Center(
-                child: Text(
-                  'Today',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
+                child: Text('Today', style: TextStyle(color: Colors.grey)),
               ),
             ),
           ),
+          // Tab "Past"
           Expanded(
             child: Container(
               child: const Center(
-                child: Text(
-                  'Past',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
+                child: Text('Past', style: TextStyle(color: Colors.grey)),
               ),
             ),
           ),
@@ -179,21 +196,11 @@ class EventsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildEventItem(
-    BuildContext context, {
-    required String title,
-    required String category,
-    required String date,
-    required String venue,
-    required String capacity,
-    required String speaker,
-    required String mc,
-    required String description,
-    required String status,
-    required String imagePath,
-  }) {
+  // Widget untuk menampilkan item event
+  Widget _buildEventItem(BuildContext context, Map<String, String> event) {
+    // Menentukan warna berdasarkan status event
     Color statusColor;
-    switch (status) {
+    switch (event['status']) {
       case 'Upcoming':
         statusColor = Colors.blue;
         break;
@@ -209,19 +216,20 @@ class EventsPage extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
+        // Navigasi ke halaman detail event
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => EventDetailsPage(
-              title: title,
-              category: category,
-              date: date,
-              venue: venue,
-              capacity: capacity,
-              speaker: speaker,
-              mc: mc,
-              description: description,
-              status: status,
+              title: event['title'] ?? '',
+              category: event['category'] ?? '',
+              date: event['date'] ?? '',
+              venue: event['venue'] ?? '',
+              capacity: event['capacity'] ?? '',
+              speaker: event['speaker'] ?? '',
+              mc: event['mc'] ?? '',
+              description: event['description'] ?? '',
+              status: event['status'] ?? '',
             ),
           ),
         );
@@ -242,13 +250,14 @@ class EventsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Event image with status badge
+            // Gambar event dengan badge status
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   child: Image.network(
-                    imagePath,
+                    event['imagePath'] ?? '',
                     height: 150,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -258,13 +267,14 @@ class EventsPage extends StatelessWidget {
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: statusColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      status,
+                      event['status'] ?? '',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -275,15 +285,15 @@ class EventsPage extends StatelessWidget {
                 ),
               ],
             ),
-            
-            // Event details
+
+            // Detail event
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    event['title'] ?? '',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -299,7 +309,7 @@ class EventsPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        category,
+                        event['category'] ?? '',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -317,7 +327,7 @@ class EventsPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        date,
+                        event['date'] ?? '',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -334,6 +344,7 @@ class EventsPage extends StatelessWidget {
     );
   }
 
+  // Widget untuk navigasi bawah
   Widget _buildBottomNavigation(BuildContext context) {
     return SafeArea(
       child: Container(
@@ -355,7 +366,13 @@ class EventsPage extends StatelessWidget {
               _buildNavItem(context, 0, Icons.home, 'Home', false),
               _buildNavItem(context, 1, Icons.task, 'Task', false),
               _buildNavItem(context, 2, Icons.event, 'Event', true),
-              _buildNavItem(context, 3, Icons.account_balance_wallet, 'Finance', false),
+              _buildNavItem(
+                context,
+                3,
+                Icons.account_balance_wallet,
+                'Finance',
+                false,
+              ),
             ],
           ),
         ),
@@ -363,32 +380,30 @@ class EventsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, IconData icon, String label, bool isSelected) {
+  // Widget untuk item navigasi bawah
+  Widget _buildNavItem(
+    BuildContext context,
+    int index,
+    IconData icon,
+    String label,
+    bool isSelected,
+  ) {
     return InkWell(
       onTap: () {
         if (!isSelected) {
-          // Pop back to home first
-          Navigator.pop(context);
-          
-          // If not going to home, navigate to the selected page
-          if (index != 0) {
-            switch (index) {
-              case 1:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TaskPage()),
-                );
-                break;
-              case 2:
-                // Already on events page
-                break;
-              case 3:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const FinancePage()),
-                );
-                break;
-            }
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/task');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/events');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/finance');
+              break;
           }
         }
       },
