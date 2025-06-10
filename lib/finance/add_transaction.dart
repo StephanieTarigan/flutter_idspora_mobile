@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/financePage.dart'; 
 
 class Addtransaction extends StatefulWidget {
   const Addtransaction({super.key});
@@ -36,11 +37,16 @@ class _TransactionPageState extends State<Addtransaction> {
                     'New Transaction',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
-                  Text(
-                    'Save',
-                    style: TextStyle(
-                      color: const Color(0xFFAA77FF),
-                      fontSize: 16,
+                  TextButton(
+                    onPressed: () {Navigator.push(context, MaterialPageRoute(
+                      builder: (context) => const FinancePage(),
+                    ));},
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(
+                        color: Color(0xFFAA77FF),
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],

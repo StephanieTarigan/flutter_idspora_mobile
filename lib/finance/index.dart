@@ -17,6 +17,8 @@ class TransactionItem extends StatelessWidget {
     required this.date,
     required this.iconBgColor,
     super.key,
+
+    
   });
 
   @override
@@ -93,7 +95,7 @@ class FinanceIndex extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        // TODO: Handle Expense button tap
+                        
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -188,44 +190,36 @@ class FinanceIndex extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   children: const [
                     TransactionItem(
-                      icon: Icons.shopping_cart,
-                      title: 'Supermarket',
-                      subtitle: 'Groceries',
-                      amount: '\Rp.210,000',
+                      icon: Icons.computer,
+                      title: 'Office Equipment',
+                      subtitle: 'IT Department',
+                      amount: '\Rp.2,450,000',
                       date: '12 June 2024',
-                      iconBgColor: Colors.amber,
+                      iconBgColor: Colors.blue,
                     ),
                     TransactionItem(
-                      icon: Icons.home,
-                      title: 'Monthly Rent Payment',
-                      subtitle: 'Rent / Mortgage',
-                      amount: '\Rp.2,100,000',
-                      date: '12 June 2024',
-                      iconBgColor: Colors.orange,
+                      icon: Icons.business,
+                      title: 'Office Rent',
+                      subtitle: 'Facilities',
+                      amount: '\Rp.4,500,000',
+                      date: '10 June 2024',
+                      iconBgColor: Colors.indigo,
                     ),
                     TransactionItem(
-                      icon: Icons.flash_on,
-                      title: 'Electricity Bill',
-                      subtitle: 'Utilities',
-                      amount: '\Rp.120,000',
-                      date: '12 June 2024',
-                      iconBgColor: Colors.yellow,
+                      icon: Icons.flight,
+                      title: 'Business Travel',
+                      subtitle: 'Sales Department',
+                      amount: '\Rp.1,250,000',
+                      date: '08 June 2024',
+                      iconBgColor: Colors.teal,
                     ),
                     TransactionItem(
-                      icon: Icons.directions_bus,
-                      title: 'Public Transit Pass',
-                      subtitle: 'Transportation',
+                      icon: Icons.restaurant,
+                      title: 'Client Lunch Meeting',
+                      subtitle: 'Marketing',
                       amount: '\Rp.180,000',
-                      date: '12 June 2024',
-                      iconBgColor: Colors.green,
-                    ),
-                    TransactionItem(
-                      icon: Icons.shopping_basket,
-                      title: 'Online Grocery Delivery',
-                      subtitle: 'Groceries',
-                      amount: '\Rp.72,000',
-                      date: '12 June 2024',
-                      iconBgColor: Colors.grey,
+                      date: '07 June 2024',
+                      iconBgColor: Colors.orange,
                     ),
                   ],
                 ),
