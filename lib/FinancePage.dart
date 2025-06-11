@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Finance App',
+      title: 'Finance Page',
       debugShowCheckedModeBanner: false,
       home: const HomeScreen(),
       routes: {
@@ -57,7 +57,7 @@ class FinancePage extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: '\Rp. 4,000,000', // Total balance
+                        text: 'Rp. 4,000,000', // Total balance
                         style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -187,7 +187,7 @@ class FinancePage extends StatelessWidget {
                       icon: Icons.computer,
                       title: 'Office Equipment',
                       subtitle: 'IT Department',
-                      amount: '\Rp.2,450,000',
+                      amount: 'Rp.2,450,000',
                       date: '12 June 2024',
                       iconBgColor: Colors.blue,
                     ),
@@ -195,7 +195,7 @@ class FinancePage extends StatelessWidget {
                       icon: Icons.business,
                       title: 'Office Rent',
                       subtitle: 'Facilities',
-                      amount: '\Rp.4,500,000',
+                      amount: 'Rp.4,500,000',
                       date: '10 June 2024',
                       iconBgColor: Colors.indigo,
                     ),
@@ -203,7 +203,7 @@ class FinancePage extends StatelessWidget {
                       icon: Icons.flight,
                       title: 'Business Travel',
                       subtitle: 'Sales Department',
-                      amount: '\Rp.1,250,000',
+                      amount: 'Rp.1,250,000',
                       date: '08 June 2024',
                       iconBgColor: Colors.teal,
                     ),
@@ -211,7 +211,7 @@ class FinancePage extends StatelessWidget {
                       icon: Icons.restaurant,
                       title: 'Client Lunch Meeting',
                       subtitle: 'Marketing',
-                      amount: '\Rp.180,000',
+                      amount: 'Rp.180,000',
                       date: '07 June 2024',
                       iconBgColor: Colors.orange,
                     ),
@@ -219,7 +219,7 @@ class FinancePage extends StatelessWidget {
                       icon: Icons.inventory,
                       title: 'Office Supplies',
                       subtitle: 'Administration',
-                      amount: '\Rp.320,000',
+                      amount: 'Rp.320,000',
                       date: '05 June 2024',
                       iconBgColor: Colors.grey,
                     ),

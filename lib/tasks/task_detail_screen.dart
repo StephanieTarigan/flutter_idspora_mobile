@@ -5,7 +5,7 @@ import 'task_model.dart';
 class TaskDetailScreen extends StatefulWidget {
   final Task task;
 
-  const TaskDetailScreen({Key? key, required this.task}) : super(key: key);
+  const TaskDetailScreen({super.key, required this.task});
 
   @override
   _TaskDetailScreenState createState() => _TaskDetailScreenState();

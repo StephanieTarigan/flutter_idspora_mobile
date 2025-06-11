@@ -66,7 +66,7 @@ class FinanceIndex extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: '\Rp. 4,000,000', // Changed currency character
+                        text: 'Rp. 4,000,000', // Changed currency character
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -191,7 +191,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.shopping_cart,
                       title: 'Supermarket',
                       subtitle: 'Groceries',
-                      amount: '\Rp.210,000',
+                      amount: 'Rp.210,000',
                       date: '12 June 2024',
                       iconBgColor: Colors.amber,
                     ),
@@ -199,7 +199,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.home,
                       title: 'Monthly Rent Payment',
                       subtitle: 'Rent / Mortgage',
-                      amount: '\Rp.2,100,000',
+                      amount: 'Rp.2,100,000',
                       date: '12 June 2024',
                       iconBgColor: Colors.orange,
                     ),
@@ -207,7 +207,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.flash_on,
                       title: 'Electricity Bill',
                       subtitle: 'Utilities',
-                      amount: '\Rp.120,000',
+                      amount: 'Rp.120,000',
                       date: '12 June 2024',
                       iconBgColor: Colors.yellow,
                     ),
@@ -215,7 +215,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.directions_bus,
                       title: 'Public Transit Pass',
                       subtitle: 'Transportation',
-                      amount: '\Rp.180,000',
+                      amount: 'Rp.180,000',
                       date: '12 June 2024',
                       iconBgColor: Colors.green,
                     ),
@@ -223,7 +223,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.shopping_basket,
                       title: 'Online Grocery Delivery',
                       subtitle: 'Groceries',
-                      amount: '\Rp.72,000',
+                      amount: 'Rp.72,000',
                       date: '12 June 2024',
                       iconBgColor: Colors.grey,
                     ),

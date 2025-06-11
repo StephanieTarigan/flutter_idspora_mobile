@@ -45,7 +45,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Indeks halaman yang dipilih pada navigasi bawah
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
 
   // Fungsi untuk menangani navigasi saat item di navigasi bawah ditekan
   void _onNavigationItemTapped(int index) {

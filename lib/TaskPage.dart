@@ -4,7 +4,7 @@ import 'tasks/task_detail_screen.dart';
 import 'tasks/create_task_screen.dart';
 
 class TaskPage extends StatefulWidget {
-  const TaskPage({Key? key}) : super(key: key);
+  const TaskPage({super.key});
 
   @override
   _TaskPageState createState() => _TaskPageState();
@@ -12,7 +12,7 @@ class TaskPage extends StatefulWidget {
 
 class _TaskPageState extends State<TaskPage> {
   late List<Task> tasks;
-  int _selectedIndex = 1;
+  final int _selectedIndex = 1;
 
   @override
   void initState() {

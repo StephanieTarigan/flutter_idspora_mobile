@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'HomeScreen.dart';
+import 'package:flutter_application_idspora/LoginScreen.dart';
 
 
 void main() {
@@ -135,7 +135,7 @@ class LandingPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
+                          builder: (context) => const LoginScreen(),
                         ),
                       );
                     },

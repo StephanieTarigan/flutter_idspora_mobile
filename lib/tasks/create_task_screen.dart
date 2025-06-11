@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'task_model.dart';
 
 class CreateTaskScreen extends StatefulWidget {
-  const CreateTaskScreen({Key? key}) : super(key: key);
+  const CreateTaskScreen({super.key});
 
   @override
   _CreateTaskScreenState createState() => _CreateTaskScreenState();

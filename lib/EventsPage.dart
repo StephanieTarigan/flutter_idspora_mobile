@@ -83,10 +83,10 @@ class _EventsPageState extends State<EventsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.orange,
+                foregroundColor: Colors.amber,
               ),
+              child: const Text('Close'),
             ),
           ],
         );
@@ -100,7 +100,7 @@ class _EventsPageState extends State<EventsPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: Colors.orange),
+          Icon(icon, size: 18, color: Colors.amber),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -146,7 +146,7 @@ class _EventsPageState extends State<EventsPage> {
         chipIcon = Icons.cancel;
         break;
       default:
-        chipColor = Colors.orange;
+        chipColor = Colors.amber;
         chipIcon = Icons.info;
     }
     
@@ -172,7 +172,7 @@ class _EventsPageState extends State<EventsPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Colors.orange,
+              primary: Colors.amber,
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -198,7 +198,7 @@ class _EventsPageState extends State<EventsPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Colors.orange,
+              primary: Colors.amber,
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -229,8 +229,8 @@ class _EventsPageState extends State<EventsPage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.amber,
+        foregroundColor: Colors.black,
         automaticallyImplyLeading: false, // Remove back button
         actions: [
           IconButton(
@@ -273,8 +273,8 @@ class _EventsPageState extends State<EventsPage> {
                           icon: const Icon(Icons.add),
                           label: const Text('Add Event'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.amber,
+                            foregroundColor: Colors.black,
                           ),
                         ),
                       ],
@@ -297,8 +297,8 @@ class _EventsPageState extends State<EventsPage> {
                             horizontal: 16,
                           ),
                           leading: CircleAvatar(
-                            backgroundColor: Colors.orange.shade100,
-                            child: const Icon(Icons.event, color: Colors.orange),
+                            backgroundColor: Colors.amber.shade100,
+                            child: const Icon(Icons.event, color: Colors.amber),
                           ),
                           title: Text(
                             event.title,
@@ -338,8 +338,8 @@ class _EventsPageState extends State<EventsPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEventBottomSheet,
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Colors.amber,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
       bottomNavigationBar: const BottomNavigation(currentRoute: '/event'),
     );

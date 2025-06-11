@@ -68,7 +68,7 @@ class FinanceIndex extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: '\Rp. 4,000,000', // Changed currency character
+                        text: 'Rp. 4,000,000', // Changed currency character
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -193,7 +193,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.computer,
                       title: 'Office Equipment',
                       subtitle: 'IT Department',
-                      amount: '\Rp.2,450,000',
+                      amount: 'Rp.2,450,000',
                       date: '12 June 2024',
                       iconBgColor: Colors.blue,
                     ),
@@ -201,7 +201,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.business,
                       title: 'Office Rent',
                       subtitle: 'Facilities',
-                      amount: '\Rp.4,500,000',
+                      amount: 'Rp.4,500,000',
                       date: '10 June 2024',
                       iconBgColor: Colors.indigo,
                     ),
@@ -209,7 +209,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.flight,
                       title: 'Business Travel',
                       subtitle: 'Sales Department',
-                      amount: '\Rp.1,250,000',
+                      amount: 'Rp.1,250,000',
                       date: '08 June 2024',
                       iconBgColor: Colors.teal,
                     ),
@@ -217,7 +217,7 @@ class FinanceIndex extends StatelessWidget {
                       icon: Icons.restaurant,
                       title: 'Client Lunch Meeting',
                       subtitle: 'Marketing',
-                      amount: '\Rp.180,000',
+                      amount: 'Rp.180,000',
                       date: '07 June 2024',
                       iconBgColor: Colors.orange,
                     ),

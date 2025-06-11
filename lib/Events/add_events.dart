@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddEvents extends StatefulWidget {
   const AddEvents({super.key});
@@ -22,15 +24,20 @@ class _AddEventPageState extends State<AddEvents> {
 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
-  String _imageUrl = '';
+  final String _imageUrl = '';
 
   // Category options
   final List<String> _categories = [
-    'UI/UX Design',
-    'Development',
-    'Marketing',
-    'Business',
-    'Other',
+    'webinar',
+    'seminar',
+    'workshop',
+    'pelatihan',
+    'talkshow',
+    'lomba',
+    'bootcamp',
+    'kuliah_umum',
+    'diskusi',
+    'lainnya',
   ];
 
   @override
@@ -83,7 +90,8 @@ class _AddEventPageState extends State<AddEvents> {
           },
         ),
       ),
-      body: SafeArea( // Tambahkan SafeArea di sini
+      body: SafeArea(
+        // Tambahkan SafeArea di sini
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -110,29 +118,30 @@ class _AddEventPageState extends State<AddEvents> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey[300]!),
                       ),
-                      child: _imageUrl.isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                _imageUrl,
-                                fit: BoxFit.cover,
+                      child:
+                          _imageUrl.isNotEmpty
+                              ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  _imageUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                              : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_photo_alternate,
+                                    size: 50,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Add Event Cover Image',
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ],
                               ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add_photo_alternate,
-                                  size: 50,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Add Event Cover Image',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                              ],
-                            ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -159,12 +168,13 @@ class _AddEventPageState extends State<AddEvents> {
                       labelText: 'Category',
                       border: OutlineInputBorder(),
                     ),
-                    items: _categories.map((String category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
+                    items:
+                        _categories.map((String category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         _categoryController.text = newValue;
@@ -199,7 +209,9 @@ class _AddEventPageState extends State<AddEvents> {
                                 const Icon(Icons.calendar_today, size: 18),
                                 const SizedBox(width: 8),
                                 Text(
-                                  DateFormat('yyyy-MM-dd').format(_selectedDate),
+                                  DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(_selectedDate),
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],
@@ -330,7 +342,9 @@ class _AddEventPageState extends State<AddEvents> {
                           final newEvent = {
                             'title': _titleController.text,
                             'category': _categoryController.text,
-                            'date': DateFormat('yyyy-MM-dd').format(_selectedDate),
+                            'date': DateFormat(
+                              'yyyy-MM-dd',
+                            ).format(_selectedDate),
                             'venue': _venueController.text,
                             'capacity': _capacityController.text,
                             'speaker': _speakerController.text,
@@ -340,7 +354,10 @@ class _AddEventPageState extends State<AddEvents> {
                             'imagePath': '',
                           };
 
-                          Navigator.pop(context, newEvent); // Kembalikan data ke EventsPage
+                          Navigator.pop(
+                            context,
+                            newEvent,
+                          ); // Kembalikan data ke EventsPage
                         }
                       },
                       style: ElevatedButton.styleFrom(
