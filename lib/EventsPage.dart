@@ -224,14 +224,14 @@ class _EventsPageState extends State<EventsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Events',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: const Text('Events'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
-        centerTitle: true,
-        backgroundColor: Colors.amber,
-        foregroundColor: Colors.black,
-        automaticallyImplyLeading: false, // Remove back button
+        // automaticallyImplyLeading: false, // Remove back button
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

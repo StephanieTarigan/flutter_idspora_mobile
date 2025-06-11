@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class AddEvents extends StatefulWidget {
   const AddEvents({super.key});
@@ -78,6 +79,59 @@ class _AddEventPageState extends State<AddEvents> {
     }
   }
 
+  Future<void> _submitEvent() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Anda harus login terlebih dahulu')),
+      );
+      return;
+    }
+
+    final eventData = {
+      'title': _titleController.text,
+      'category': _categoryController.text,
+      'date': DateFormat('yyyy-MM-dd').format(_selectedDate),
+      'time': _selectedTime.format(context),
+      'venue': _venueController.text,
+      'capacity': _capacityController.text,
+      'speaker': _speakerController.text,
+      'mc': _mcController.text,
+      'description': _descriptionController.text,
+      'imagePath': '',
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/events'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(eventData),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event berhasil ditambahkan!')),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menambah event: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan koneksi: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,7 +145,6 @@ class _AddEventPageState extends State<AddEvents> {
         ),
       ),
       body: SafeArea(
-        // Tambahkan SafeArea di sini
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -103,7 +156,6 @@ class _AddEventPageState extends State<AddEvents> {
                   // Event Image
                   GestureDetector(
                     onTap: () {
-                      // TODO: Implement image picker
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Image picker not implemented yet'),
@@ -164,6 +216,10 @@ class _AddEventPageState extends State<AddEvents> {
 
                   // Event Category
                   DropdownButtonFormField<String>(
+                    value:
+                        _categoryController.text.isNotEmpty
+                            ? _categoryController.text
+                            : null,
                     decoration: const InputDecoration(
                       labelText: 'Category',
                       border: OutlineInputBorder(),
@@ -176,9 +232,9 @@ class _AddEventPageState extends State<AddEvents> {
                           );
                         }).toList(),
                     onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        _categoryController.text = newValue;
-                      }
+                      setState(() {
+                        _categoryController.text = newValue ?? '';
+                      });
                     },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -337,29 +393,7 @@ class _AddEventPageState extends State<AddEvents> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          final newEvent = {
-                            'title': _titleController.text,
-                            'category': _categoryController.text,
-                            'date': DateFormat(
-                              'yyyy-MM-dd',
-                            ).format(_selectedDate),
-                            'venue': _venueController.text,
-                            'capacity': _capacityController.text,
-                            'speaker': _speakerController.text,
-                            'mc': _mcController.text,
-                            'description': _descriptionController.text,
-                            'status': 'Upcoming',
-                            'imagePath': '',
-                          };
-
-                          Navigator.pop(
-                            context,
-                            newEvent,
-                          ); // Kembalikan data ke EventsPage
-                        }
-                      },
+                      onPressed: _submitEvent,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.amber,
                         foregroundColor: Colors.black,
