@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_idspora/controller/EventController.dart';
 import 'package:flutter_application_idspora/models/Event.dart';
+import 'package:flutter_application_idspora/Widgets/BottomNavigation.dart';
+import 'package:intl/intl.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -13,6 +15,7 @@ class _EventsPageState extends State<EventsPage> {
   final EventController _eventController = EventController();
   List<Event> _events = [];
   bool _isLoading = false;
+  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -41,7 +44,12 @@ class _EventsPageState extends State<EventsPage> {
 
   void _showSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(10),
+      ),
     );
   }
 
@@ -50,26 +58,35 @@ class _EventsPageState extends State<EventsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(event.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Category: ${event.category}'),
-              Text('Date: ${event.date}'),
-              Text('Time: ${event.time}'),
-              Text('Venue: ${event.venue}'),
-              Text('Capacity: ${event.capacity}'),
-              Text('Speaker: ${event.speaker}'),
-              Text('MC: ${event.mc}'),
-              Text('Description: ${event.description ?? "-"}'),
-              Text('Status: ${event.status}'),
-            ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text(
+            event.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDetailItem(Icons.category, 'Category', event.category),
+                _buildDetailItem(Icons.calendar_today, 'Date', event.date),
+                _buildDetailItem(Icons.access_time, 'Time', event.time),
+                _buildDetailItem(Icons.location_on, 'Venue', event.venue),
+                _buildDetailItem(Icons.people, 'Capacity', event.capacity.toString()),
+                _buildDetailItem(Icons.person, 'Speaker', event.speaker),
+                _buildDetailItem(Icons.mic, 'MC', event.mc),
+                _buildDetailItem(Icons.description, 'Description', event.description ?? "-"),
+                _buildDetailItem(Icons.info, 'Status', _getStatusChip(event.status)),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Close'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.orange,
+              ),
             ),
           ],
         );
@@ -77,168 +94,254 @@ class _EventsPageState extends State<EventsPage> {
     );
   }
 
-  void _showAddEventBottomSheet() {
-    final rootContext = context; // Simpan context utama
-
-    final _titleController = TextEditingController();
-    final _categoryController = TextEditingController();
-    final _venueController = TextEditingController();
-    final _capacityController = TextEditingController();
-    final _speakerController = TextEditingController();
-    final _mcController = TextEditingController();
-    final _descriptionController = TextEditingController();
-    final _dateController = TextEditingController();
-    final _timeController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: 16,
-            left: 16,
-            right: 16,
-          ),
-          child: SingleChildScrollView(
+  Widget _buildDetailItem(IconData icon, String label, dynamic value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: Colors.orange),
+          const SizedBox(width: 8),
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Add New Event',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                ),
-                TextField(
-                  controller: _categoryController,
-                  decoration: const InputDecoration(labelText: 'Category'),
-                ),
-                TextField(
-                  controller: _venueController,
-                  decoration: const InputDecoration(labelText: 'Venue'),
-                ),
-                TextField(
-                  controller: _capacityController,
-                  decoration: const InputDecoration(labelText: 'Capacity'),
-                  keyboardType: TextInputType.number,
-                ),
-                TextField(
-                  controller: _speakerController,
-                  decoration: const InputDecoration(labelText: 'Speaker'),
-                ),
-                TextField(
-                  controller: _mcController,
-                  decoration: const InputDecoration(labelText: 'MC'),
-                ),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-                TextField(
-                  controller: _dateController,
-                  decoration: const InputDecoration(
-                    labelText: 'Date (YYYY-MM-DD)',
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
-                TextField(
-                  controller: _timeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Time (HH:MM:SS)',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    // Validasi
-                    if (_titleController.text.isEmpty ||
-                        _categoryController.text.isEmpty ||
-                        _venueController.text.isEmpty ||
-                        _capacityController.text.isEmpty ||
-                        _speakerController.text.isEmpty ||
-                        _mcController.text.isEmpty ||
-                        _dateController.text.isEmpty ||
-                        _timeController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please fill in all required fields!'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    final capacity =
-                        int.tryParse(_capacityController.text) ?? 0;
-
-                    final newEvent = Event(
-                      id: 0,
-                      title: _titleController.text,
-                      category: _categoryController.text,
-                      venue: _venueController.text,
-                      capacity: capacity,
-                      speaker: _speakerController.text,
-                      mc: _mcController.text,
-                      description: _descriptionController.text.isEmpty
-                          ? null
-                          : _descriptionController.text,
-                      date: _dateController.text,
-                      time: _timeController.text,
-                      status: 'draft',
-                    );
-
-                    try {
-                      await EventController.createEvent(newEvent);
-
-                      // ✅ Tutup modal (pakai context rootNavigator biar pasti modal yang tertutup)
-                      Navigator.of(rootContext, rootNavigator: true).pop();
-
-                      // ✅ Tampilkan snackbar di layar utama
-                      if (mounted) {
-                        _showSnackbar('Event created successfully!');
-                        _loadEvents();
-                      }
-                    } catch (e) {
-                      // Snackbar muncul di modal kalau error
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to create event: $e')),
-                      );
-                    }
-                  },
-                  child: const Text('Submit'),
-                ),
+                const SizedBox(height: 2),
+                value is Widget
+                    ? value
+                    : Text(
+                        value.toString(),
+                        style: const TextStyle(fontSize: 14),
+                      ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getStatusChip(String status) {
+    Color chipColor;
+    IconData chipIcon;
+    
+    switch (status.toLowerCase()) {
+      case 'draft':
+        chipColor = Colors.grey;
+        chipIcon = Icons.edit;
+        break;
+      case 'published':
+        chipColor = Colors.green;
+        chipIcon = Icons.check_circle;
+        break;
+      case 'cancelled':
+        chipColor = Colors.red;
+        chipIcon = Icons.cancel;
+        break;
+      default:
+        chipColor = Colors.orange;
+        chipIcon = Icons.info;
+    }
+    
+    return Chip(
+      avatar: Icon(chipIcon, size: 16, color: Colors.white),
+      label: Text(
+        status,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+      ),
+      backgroundColor: chipColor,
+      padding: const EdgeInsets.all(0),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+
+  Future<void> _selectDate(TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.orange,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
         );
       },
     );
+    
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+        controller.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+  Future<void> _selectTime(TextEditingController controller) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.orange,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null) {
+      setState(() {
+        controller.text = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}:00';
+      });
+    }
+  }
+
+  void _showAddEventBottomSheet() {
+    // Navigate to the add events page instead of showing bottom sheet
+    Navigator.pushNamed(context, '/add_events');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Events')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _events.isEmpty
-              ? const Center(child: Text('No events found.'))
-              : ListView.builder(
-                  itemCount: _events.length,
-                  itemBuilder: (context, index) {
-                    final event = _events[index];
-                    return ListTile(
-                      title: Text(event.title),
-                      subtitle: Text(event.category),
-                      onTap: () => _showEventDetailDialog(event),
-                    );
-                  },
-                ),
+      appBar: AppBar(
+        title: const Text(
+          'Events',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false, // Remove back button
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadEvents,
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadEvents,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _events.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.event_busy,
+                          size: 80,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No events found',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Pull down to refresh or add a new event',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton.icon(
+                          onPressed: _showAddEventBottomSheet,
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Event'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _events.length,
+                    itemBuilder: (context, index) {
+                      final event = _events[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 16,
+                          ),
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.orange.shade100,
+                            child: const Icon(Icons.event, color: Colors.orange),
+                          ),
+                          title: Text(
+                            event.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(event.category),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    event.date,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    event.time,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          trailing: _getStatusChip(event.status),
+                          onTap: () => _showEventDetailDialog(event),
+                        ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEventBottomSheet,
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
+      bottomNavigationBar: const BottomNavigation(currentRoute: '/event'),
     );
   }
 }

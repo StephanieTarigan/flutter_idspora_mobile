@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 
+class BottomNavigation extends StatelessWidget {
+  final String currentRoute;
+
+  const BottomNavigation({
+    super.key,
+    required this.currentRoute,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildBottomNavigation(context);
+  }
+
 Widget _buildBottomNavigation(BuildContext context) {
     return SafeArea(
       child: Container(
@@ -77,3 +90,4 @@ Widget _buildBottomNavigation(BuildContext context) {
       ),
     );
   }
+}

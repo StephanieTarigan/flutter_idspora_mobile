@@ -16,9 +16,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Finance App',
+      title: 'IdSpora Manajemen Internal',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch:  Colors.orange,
         scaffoldBackgroundColor: Colors.white, // Warna latar belakang default
       ),
       initialRoute: '/landing', // Rute awal aplikasi
