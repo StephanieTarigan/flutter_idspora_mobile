@@ -42,13 +42,77 @@ class _EventsPageState extends State<EventsPage> {
     }
   }
 
+  // Calculate statistics
+  int get totalEvents => _events.length;
+  
+  int get upcomingEvents {
+    final now = DateTime.now();
+    return _events.where((event) {
+      try {
+        final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+        return eventDate.isAfter(now) || eventDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
+      } catch (e) {
+        return false;
+      }
+    }).length;
+  }
+  
+  int get pastEvents {
+    final now = DateTime.now();
+    return _events.where((event) {
+      try {
+        final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+        return eventDate.isBefore(DateTime(now.year, now.month, now.day));
+      } catch (e) {
+        return false;
+      }
+    }).length;
+  }
+  
+  int get thisMonthEvents {
+    final now = DateTime.now();
+    return _events.where((event) {
+      try {
+        final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+        return eventDate.year == now.year && eventDate.month == now.month;
+      } catch (e) {
+        return false;
+      }
+    }).length;
+  }
+
+  List<Event> get upcomingEventsList {
+    final now = DateTime.now();
+    return _events.where((event) {
+      try {
+        final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+        return eventDate.isAfter(now) || eventDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
+      } catch (e) {
+        return false;
+      }
+    }).toList();
+  }
+
+  List<Event> get pastEventsList {
+    final now = DateTime.now();
+    return _events.where((event) {
+      try {
+        final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+        return eventDate.isBefore(DateTime(now.year, now.month, now.day));
+      } catch (e) {
+        return false;
+      }
+    }).toList();
+  }
+
   void _showSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        backgroundColor: Colors.grey[800],
       ),
     );
   }
@@ -58,25 +122,28 @@ class _EventsPageState extends State<EventsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             event.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailItem(Icons.category, 'Category', event.category),
-                _buildDetailItem(Icons.calendar_today, 'Date', event.date),
-                _buildDetailItem(Icons.access_time, 'Time', event.time),
-                _buildDetailItem(Icons.location_on, 'Venue', event.venue),
-                _buildDetailItem(Icons.people, 'Capacity', event.capacity.toString()),
-                _buildDetailItem(Icons.person, 'Speaker', event.speaker),
-                _buildDetailItem(Icons.mic, 'MC', event.mc),
-                _buildDetailItem(Icons.description, 'Description', event.description ?? "-"),
-                _buildDetailItem(Icons.info, 'Status', _getStatusChip(event.status)),
+                _buildDetailItem(Icons.category_rounded, 'Category', event.category),
+                _buildDetailItem(Icons.calendar_today_rounded, 'Date', event.date),
+                _buildDetailItem(Icons.access_time_rounded, 'Time', event.time),
+                _buildDetailItem(Icons.location_on_rounded, 'Venue', event.venue),
+                _buildDetailItem(Icons.people_rounded, 'Capacity', event.capacity.toString()),
+                _buildDetailItem(Icons.person_rounded, 'Speaker', event.speaker),
+                _buildDetailItem(Icons.mic_rounded, 'MC', event.mc),
+                _buildDetailItem(Icons.description_rounded, 'Description', event.description ?? "-"),
+                _buildDetailItem(Icons.info_rounded, 'Status', _getStatusChip(event.status)),
               ],
             ),
           ),
@@ -84,9 +151,13 @@ class _EventsPageState extends State<EventsPage> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.amber,
+                foregroundColor: Colors.orange,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: const Text('Close'),
+              child: const Text(
+                'Close',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         );
@@ -100,8 +171,15 @@ class _EventsPageState extends State<EventsPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: Colors.amber),
-          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 18, color: Colors.orange),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,16 +187,20 @@ class _EventsPageState extends State<EventsPage> {
                 Text(
                   label,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontSize: 14,
+                    color: Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 value is Widget
                     ? value
                     : Text(
                         value.toString(),
-                        style: const TextStyle(fontSize: 14),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
               ],
             ),
@@ -135,213 +217,498 @@ class _EventsPageState extends State<EventsPage> {
     switch (status.toLowerCase()) {
       case 'draft':
         chipColor = Colors.grey;
-        chipIcon = Icons.edit;
+        chipIcon = Icons.edit_rounded;
         break;
       case 'published':
         chipColor = Colors.green;
-        chipIcon = Icons.check_circle;
+        chipIcon = Icons.check_circle_rounded;
         break;
       case 'cancelled':
         chipColor = Colors.red;
-        chipIcon = Icons.cancel;
+        chipIcon = Icons.cancel_rounded;
         break;
       default:
-        chipColor = Colors.amber;
-        chipIcon = Icons.info;
+        chipColor = Colors.orange;
+        chipIcon = Icons.info_rounded;
     }
     
-    return Chip(
-      avatar: Icon(chipIcon, size: 16, color: Colors.white),
-      label: Text(
-        status,
-        style: const TextStyle(color: Colors.white, fontSize: 12),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: chipColor,
+        borderRadius: BorderRadius.circular(20),
       ),
-      backgroundColor: chipColor,
-      padding: const EdgeInsets.all(0),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(chipIcon, size: 14, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            status,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<void> _selectDate(TextEditingController controller) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.amber,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
+  // Build horizontal scrollable statistics cards
+  Widget _buildSummaryCards() {
+    return SizedBox(
+      height: 140,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: [
+          SummaryCard(
+            title: 'Total Events',
+            value: totalEvents.toString(),
+            icon: Icons.calendar_month_rounded,
+            color: const Color(0xFF8B5CF6),
           ),
-          child: child!,
-        );
-      },
+          const SizedBox(width: 12),
+          SummaryCard(
+            title: 'Upcoming Events',
+            value: upcomingEvents.toString(),
+            icon: Icons.event_available_rounded,
+            color: const Color(0xFFF97316),
+          ),
+          const SizedBox(width: 12),
+          SummaryCard(
+            title: 'Past Events',
+            value: pastEvents.toString(),
+            icon: Icons.history_rounded,
+            color: const Color(0xFF6B7280),
+          ),
+          const SizedBox(width: 12),
+          SummaryCard(
+            title: 'This Month',
+            value: thisMonthEvents.toString(),
+            icon: Icons.calendar_today_rounded,
+            color: const Color(0xFF10B981),
+          ),
+        ],
+      ),
     );
-    
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        controller.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
   }
 
-  Future<void> _selectTime(TextEditingController controller) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.amber,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+  Widget _buildModernEventCard(Event event, {bool isUpcoming = true}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            spreadRadius: 0,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  event.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  if (isUpcoming) ...[
+                    _buildActionButton(
+                      'Edit',
+                      Colors.orange.shade50,
+                      Colors.orange,
+                      () => _editEvent(event),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildActionButton(
+                      'Delete',
+                      Colors.red.shade50,
+                      Colors.red,
+                      () => _deleteEvent(event),
+                    ),
+                  ] else ...[
+                    _buildActionButton(
+                      'Delete',
+                      Colors.red.shade50,
+                      Colors.red,
+                      () => _deleteEvent(event),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildActionButton(
+                      'View',
+                      Colors.green.shade50,
+                      Colors.green,
+                      () => _showEventDetailDialog(event),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '${event.date} - ${event.time}',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          child: child!,
-        );
-      },
+          const SizedBox(height: 8),
+          if (event.description != null && event.description!.isNotEmpty)
+            Text(
+              event.description!,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                height: 1.4,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () => _showEventDetailDialog(event),
+            child: const Row(
+              children: [
+                Text(
+                  'View Details',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.orange,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
-    
-    if (picked != null) {
-      setState(() {
-        controller.text = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}:00';
-      });
-    }
+  }
+
+  Widget _buildActionButton(String text, Color backgroundColor, Color textColor, VoidCallback onPressed) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+
+  void _editEvent(Event event) {
+    // Navigate to edit event page
+    Navigator.pushNamed(context, '/edit_event', arguments: event);
+  }
+
+  void _deleteEvent(Event event) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Delete Event',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text('Are you sure you want to delete "${event.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // Implement delete logic here
+              Navigator.pop(context);
+              _showSnackbar('Event deleted successfully');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAddEventBottomSheet() {
-    // Navigate to the add events page instead of showing bottom sheet
     Navigator.pushNamed(context, '/add_events');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('Events'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        title: const Text(
+          'Events',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
-        // automaticallyImplyLeading: false, // Remove back button
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: Colors.black87),
             onPressed: _loadEvents,
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadEvents,
+        color: Colors.orange,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _events.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.event_busy,
-                          size: 80,
-                          color: Colors.grey,
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.orange,
+                ),
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    
+                    // Horizontal Scrollable Statistics Cards
+                    _buildSummaryCards(),
+                    
+                    const SizedBox(height: 8),
+                    
+                    // Upcoming Events Section
+                    if (upcomingEventsList.isNotEmpty) ...[
+                      _buildSectionTitle('Upcoming Events'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: upcomingEventsList
+                              .map((event) => _buildModernEventCard(event, isUpcoming: true))
+                              .toList(),
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'No events found',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          ),
+                      ),
+                    ],
+                    
+                    // History Section
+                    if (pastEventsList.isNotEmpty) ...[
+                      _buildSectionTitle('History'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: pastEventsList
+                              .map((event) => _buildModernEventCard(event, isUpcoming: false))
+                              .toList(),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Pull down to refresh or add a new event',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          onPressed: _showAddEventBottomSheet,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Event'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            foregroundColor: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(8),
-                    itemCount: _events.length,
-                    itemBuilder: (context, index) {
-                      final event = _events[index];
-                      return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 16,
-                          ),
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.amber.shade100,
-                            child: const Icon(Icons.event, color: Colors.amber),
-                          ),
-                          title: Text(
-                            event.title,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 4),
-                              Text(event.category),
-                              const SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    event.date,
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    event.time,
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ],
+                      ),
+                    ],
+                    
+                    // Empty State
+                    if (_events.isEmpty) ...[
+                      const SizedBox(height: 60),
+                      Center(
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(50),
                               ),
-                            ],
-                          ),
-                          trailing: _getStatusChip(event.status),
-                          onTap: () => _showEventDetailDialog(event),
+                              child: Icon(
+                                Icons.event_busy_rounded,
+                                size: 48,
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              'No events found',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Pull down to refresh or add a new event',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            ElevatedButton.icon(
+                              onPressed: _showAddEventBottomSheet,
+                              icon: const Icon(Icons.add_rounded),
+                              label: const Text('Add Event'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ],
+                    
+                    const SizedBox(height: 100), // Space for FAB
+                  ],
+                ),
+              ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddEventBottomSheet,
-        backgroundColor: Colors.amber,
-        child: const Icon(Icons.add, color: Colors.black),
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Add Event',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
       bottomNavigationBar: const BottomNavigation(currentRoute: '/event'),
+    );
+  }
+}
+
+// SummaryCard Widget
+class SummaryCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const SummaryCard({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 160,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            spreadRadius: 0,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 20,
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

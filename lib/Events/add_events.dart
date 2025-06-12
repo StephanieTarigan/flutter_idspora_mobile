@@ -21,11 +21,12 @@ class _AddEventPageState extends State<AddEvents> {
   final _capacityController = TextEditingController();
   final _speakerController = TextEditingController();
   final _mcController = TextEditingController();
+  final _statusController = TextEditingController();
   final _descriptionController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
-  final String _imageUrl = '';
+  String _imageUrl = '';
 
   // Category options
   final List<String> _categories = [
@@ -41,6 +42,20 @@ class _AddEventPageState extends State<AddEvents> {
     'lainnya',
   ];
 
+  final List<String> _statusList = [
+  'draft',
+  'submitted',
+  'approved',
+  'rejected',
+];
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryController.text = _categories.first; // Set default kategori
+    _statusController.text = _statusList.first; // Set default status
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -49,6 +64,7 @@ class _AddEventPageState extends State<AddEvents> {
     _capacityController.dispose();
     _speakerController.dispose();
     _mcController.dispose();
+    _statusController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -86,6 +102,7 @@ class _AddEventPageState extends State<AddEvents> {
     final token = prefs.getString('token');
 
     if (token == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Anda harus login terlebih dahulu')),
       );
@@ -102,6 +119,7 @@ class _AddEventPageState extends State<AddEvents> {
       'speaker': _speakerController.text,
       'mc': _mcController.text,
       'description': _descriptionController.text,
+      'status': _statusController.text,
       'imagePath': '',
     };
 
@@ -115,20 +133,24 @@ class _AddEventPageState extends State<AddEvents> {
         body: jsonEncode(eventData),
       );
 
+      if (!mounted) return;
       if (response.statusCode == 201 || response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Event berhasil ditambahkan!')),
         );
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menambah event: ${response.body}')),
-        );
-      }
+  print('Status: ${response.statusCode}');
+  print('Body: ${response.body}');
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Gagal menambah event: ${response.body}')),
+  );
+}
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan koneksi: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan koneksi: $e')),
+      );
     }
   }
 
@@ -170,30 +192,29 @@ class _AddEventPageState extends State<AddEvents> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey[300]!),
                       ),
-                      child:
-                          _imageUrl.isNotEmpty
-                              ? ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  _imageUrl,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                              : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.add_photo_alternate,
-                                    size: 50,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Add Event Cover Image',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                ],
+                      child: _imageUrl.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                _imageUrl,
+                                fit: BoxFit.cover,
                               ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate,
+                                  size: 50,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Add Event Cover Image',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -216,21 +237,19 @@ class _AddEventPageState extends State<AddEvents> {
 
                   // Event Category
                   DropdownButtonFormField<String>(
-                    value:
-                        _categoryController.text.isNotEmpty
-                            ? _categoryController.text
-                            : null,
+                    value: _categoryController.text.isNotEmpty
+                        ? _categoryController.text
+                        : null,
                     decoration: const InputDecoration(
                       labelText: 'Category',
                       border: OutlineInputBorder(),
                     ),
-                    items:
-                        _categories.map((String category) {
-                          return DropdownMenuItem<String>(
-                            value: category,
-                            child: Text(category),
-                          );
-                        }).toList(),
+                    items: _categories.map((String category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
                     onChanged: (String? newValue) {
                       setState(() {
                         _categoryController.text = newValue ?? '';
@@ -265,9 +284,7 @@ class _AddEventPageState extends State<AddEvents> {
                                 const Icon(Icons.calendar_today, size: 18),
                                 const SizedBox(width: 8),
                                 Text(
-                                  DateFormat(
-                                    'yyyy-MM-dd',
-                                  ).format(_selectedDate),
+                                  DateFormat('yyyy-MM-dd').format(_selectedDate),
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],
@@ -369,6 +386,34 @@ class _AddEventPageState extends State<AddEvents> {
                     },
                   ),
                   const SizedBox(height: 16),
+
+                  // Status
+                  DropdownButtonFormField<String>(
+  value: _statusController.text.isNotEmpty ? _statusController.text : null,
+  decoration: const InputDecoration(
+    labelText: 'Status',
+    border: OutlineInputBorder(),
+  ),
+  items: _statusList.map((String status) {
+    return DropdownMenuItem<String>(
+      value: status,
+      child: Text(status),
+    );
+  }).toList(),
+  onChanged: (String? newValue) {
+    setState(() {
+      _statusController.text = newValue ?? '';
+    });
+  },
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'Please select a status';
+    }
+    return null;
+  },
+),
+const SizedBox(height: 16),
+
 
                   // Description
                   TextFormField(
