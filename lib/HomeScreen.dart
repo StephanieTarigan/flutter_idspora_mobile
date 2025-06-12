@@ -1,40 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_idspora/controller/EventController.dart';
+import 'package:flutter_application_idspora/models/Event.dart';
+import 'package:intl/intl.dart';
 
 import 'taskpage.dart';
 import 'eventspage.dart';
 import 'financepage.dart';
 import 'Events/EventDetailsPage.dart';
-
-void main() {
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Task Manager',
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
-        ),
-      ),
-      home: const HomeScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,32 +17,117 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Indeks halaman yang dipilih pada navigasi bawah
   final int _selectedIndex = 0;
+  
+  // Data variables
+  List<Event> _events = [];
+  bool _isLoading = true;
+  String _userName = 'Stephanie'; // This should come from user profile API
+  
+  // Statistics
+  int _upcomingEventsCount = 0;
+  Event? _nextUpcomingEvent;
 
-  // Fungsi untuk menangani navigasi saat item di navigasi bawah ditekan
+  @override
+  void initState() {
+    super.initState();
+    _loadEventsData();
+  }
+
+  Future<void> _loadEventsData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final events = await EventController.fetchEvents();
+      final now = DateTime.now();
+      
+      // Filter upcoming events
+      final upcomingEvents = events.where((event) {
+        try {
+          final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+          return eventDate.isAfter(now) || eventDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
+        } catch (e) {
+          return false;
+        }
+      }).toList();
+
+      // Sort by date to get the next upcoming event
+      upcomingEvents.sort((a, b) {
+        try {
+          final dateA = DateFormat('yyyy-MM-dd').parse(a.date);
+          final dateB = DateFormat('yyyy-MM-dd').parse(b.date);
+          return dateA.compareTo(dateB);
+        } catch (e) {
+          return 0;
+        }
+      });
+
+      setState(() {
+        _events = events;
+        _upcomingEventsCount = upcomingEvents.length;
+        _nextUpcomingEvent = upcomingEvents.isNotEmpty ? upcomingEvents.first : null;
+      });
+    } catch (e) {
+      _showSnackbar('Error loading events: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        backgroundColor: Colors.grey[800],
+      ),
+    );
+  }
+
+  String _getTimeLeft(Event event) {
+    try {
+      final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+      final now = DateTime.now();
+      final difference = eventDate.difference(now).inDays;
+      
+      if (difference == 0) {
+        return 'Today';
+      } else if (difference == 1) {
+        return 'Tomorrow';
+      } else if (difference > 1) {
+        return '$difference Days Left';
+      } else {
+        return 'Past Event';
+      }
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
   void _onNavigationItemTapped(int index) {
     if (index != _selectedIndex) {
       switch (index) {
         case 0:
-          // Sudah di halaman Home, tidak melakukan apa-apa
           break;
         case 1:
-        // Navigasi ke halaman Task
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const TaskPage()),
           );
           break;
         case 2:
-        // Navigasi ke halaman Events
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const EventsPage()),
           );
           break;
         case 3:
-        // Navigasi ke halaman Finance
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const FinancePage()),
@@ -83,16 +141,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              _buildGreeting(),
-              _buildSummaryCards(),
-              _buildUpcomingEvents(),
-              _buildUpcomingTasks(),
-            ],
+        child: RefreshIndicator(
+          onRefresh: _loadEventsData,
+          color: Colors.orange,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                _buildGreeting(),
+                _buildSummaryCards(),
+                _buildUpcomingEvents(),
+                _buildUpcomingTasks(),
+              ],
+            ),
           ),
         ),
       ),
@@ -100,14 +163,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk header dengan ikon notifikasi dan foto profil
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Ikon notifikasi dengan badge
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -120,7 +181,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: const Icon(Icons.notifications_outlined),
                   onPressed: () {},
                 ),
-                // Badge merah untuk notifikasi
                 Positioned(
                   right: 10,
                   top: 10,
@@ -137,7 +197,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          // Foto profil pengguna
           Container(
             width: 40,
             height: 40,
@@ -155,16 +214,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk salam pengguna
   Widget _buildGreeting() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Hi, Stephanie',
-            style: TextStyle(
+          Text(
+            'Hi, $_userName',
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -182,47 +240,49 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk menampilkan kartu ringkasan secara horizontal
+  // Summary cards dengan data Events dari API dan data dummy untuk Task & Finance
   Widget _buildSummaryCards() {
     return SizedBox(
       height: 110,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        children: const [
+        children: [
+          // Data dari API Events
           SummaryCard(
             title: 'Upcoming Events',
-            value: '5',
+            value: _isLoading ? '...' : _upcomingEventsCount.toString(),
             icon: Icons.event,
-            color: Color(0xFF0E1330),
+            color: const Color(0xFF0E1330),
           ),
-          SizedBox(width: 12),
-          SummaryCard(
+          const SizedBox(width: 12),
+          // Data dummy untuk Tasks
+          const SummaryCard(
             title: 'Unfinished Tasks',
             value: '20',
             icon: Icons.task_alt,
-            color: Color(0xFF0E1330),
+            color: const Color(0xFF0E1330),
           ),
-          SizedBox(width: 12),
-          SummaryCard(
+          const SizedBox(width: 12),
+          // Data dummy untuk Finance
+          const SummaryCard(
             title: 'Monthly Expenses',
             value: 'Rp 2.5M',
             icon: Icons.bar_chart,
-            color: Color(0xFF0E1330),
+            color: const Color(0xFF0E1330),
           ),
-          SizedBox(width: 12),
-          SummaryCard(
+          const SizedBox(width: 12),
+          const SummaryCard(
             title: 'Monthly Income',
             value: 'Rp 5.8M',
             icon: Icons.account_balance_wallet,
-            color: Color(0xFF0E1330),
+            color: const Color(0xFF0E1330),
           ),
         ],
       ),
     );
   }
 
-  // Widget untuk header setiap bagian dengan judul dan tombol navigasi
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
@@ -259,45 +319,107 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk menampilkan event yang akan datang
+  // Upcoming Events dari API Database
   Widget _buildUpcomingEvents() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Upcoming Events'),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const EventDetailsPage(
-                  title: 'From Wireframe to Wow: Figma for UI/UX Beginners',
-                  category: 'UI/UX Design',
-                  date: '2025-05-04 at 03:38',
-                  venue: 'fit',
-                  capacity: '100 people',
-                  speaker: 'bapak bapak',
-                  mc: 'mamak mamak',
-                  description: 'Learn the basics of UI/UX design using Figma.',
-                  status: 'Upcoming',
+        if (_isLoading)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.orange,
                 ),
               ),
-            );
-          },
-          child: const EventCard(
-            title: 'From Wireframe to Wow: Figma for UI/UX Beginners',
-            category: 'UI/UX Design',
-            progress: 0.50,
-            progressText: '50%',
-            timeLeft: '3 Days Left',
-            imagePath: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+            ),
+          )
+        else if (_nextUpcomingEvent != null)
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventDetailsPage(event: _nextUpcomingEvent!),
+                ),
+              ).then((result) {
+                // Refresh events jika ada perubahan
+                if (result == true) {
+                  _loadEventsData();
+                }
+              });
+            },
+            child: EventCard(
+              title: _nextUpcomingEvent!.title,
+              category: _nextUpcomingEvent!.category,
+              progress: 0.50, // Progress bisa dihitung berdasarkan status event
+              progressText: '50%',
+              timeLeft: _getTimeLeft(_nextUpcomingEvent!),
+              imagePath: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.event_busy,
+                      size: 48,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No upcoming events',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const EventsPage()),
+                        ).then((result) {
+                          if (result == true) {
+                            _loadEventsData();
+                          }
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('View All Events'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
       ],
     );
   }
 
-  // Widget untuk menampilkan tugas yang akan datang
+  // Upcoming Tasks tetap menggunakan data dummy
   Widget _buildUpcomingTasks() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        // Task card
+        // Task card - Data dummy
         const TaskCard(
           title: 'Creating Awesome Mobile Apps',
           category: 'UI/UX Designer',
@@ -333,7 +455,6 @@ class _HomeScreenState extends State<HomeScreen> {
           imagePath: 'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ),
         const SizedBox(height: 16),
-        // Task detail header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
@@ -356,17 +477,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        // Task detail items
+        // Task detail items - Data dummy
         const TaskDetailItem(number: 1, text: 'Tentukan tanggal, waktu, dan durasi'),
         const TaskDetailItem(number: 2, text: 'Tentukan MC dan Narasumber'),
         const TaskDetailItem(number: 3, text: 'Buat poster & konten promosi'),
         const TaskDetailItem(number: 4, text: 'Buat dan sebar Google Form/website untuk pendaftaran'),
         const SizedBox(height: 16),
-        // Go to detail button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TaskPage()),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4F6AF6),
               minimumSize: const Size(double.infinity, 50),
@@ -388,7 +513,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk navigasi bawah
   Widget _buildBottomNavigation() {
     return SafeArea(
       child: Container(
@@ -418,7 +542,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk item navigasi bawah
   Widget _buildNavItem(int index, IconData icon, String label, bool isSelected) {
     return InkWell(
       onTap: () {
@@ -454,9 +577,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Widget components
-
-// Summary card for displaying statistics
+// Widget components tetap sama
 class SummaryCard extends StatelessWidget {
   final String title;
   final String value;
@@ -518,7 +639,6 @@ class SummaryCard extends StatelessWidget {
   }
 }
 
-// Event card with image, progress, and team members
 class EventCard extends StatelessWidget {
   final String title;
   final String category;
@@ -544,7 +664,6 @@ class EventCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Event image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
@@ -555,7 +674,6 @@ class EventCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // Event title and category
           Text(
             title,
             style: const TextStyle(
@@ -572,7 +690,6 @@ class EventCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // Progress indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -600,7 +717,6 @@ class EventCard extends StatelessWidget {
             minHeight: 6,
           ),
           const SizedBox(height: 12),
-          // Time left and team members
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -630,7 +746,6 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  // Team members avatars
   Widget _buildTeamAvatars() {
     return SizedBox(
       width: 80,
@@ -659,7 +774,6 @@ class EventCard extends StatelessWidget {
   }
 }
 
-// Task card with image, progress, and team members
 class TaskCard extends StatelessWidget {
   final String title;
   final String category;
@@ -685,7 +799,6 @@ class TaskCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Task image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
@@ -696,7 +809,6 @@ class TaskCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // Task title and category
           Text(
             title,
             style: const TextStyle(
@@ -713,7 +825,6 @@ class TaskCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // Progress indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -741,7 +852,6 @@ class TaskCard extends StatelessWidget {
             minHeight: 6,
           ),
           const SizedBox(height: 12),
-          // Time left and team members
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -771,7 +881,6 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  // Team members avatars
   Widget _buildTeamAvatars() {
     return SizedBox(
       width: 80,
@@ -800,7 +909,6 @@ class TaskCard extends StatelessWidget {
   }
 }
 
-// Task detail item with number and text
 class TaskDetailItem extends StatelessWidget {
   final int number;
   final String text;

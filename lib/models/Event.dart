@@ -1,5 +1,5 @@
 class Event {
-  final int? id; // misalnya API juga mengirimkan id
+  final int? id; 
   final String title;
   final String date;
   final String time;

@@ -1,31 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:flutter_application_idspora/controller/EventController.dart';
 import 'package:flutter_application_idspora/models/Event.dart';
+import 'package:flutter_application_idspora/controller/EventController.dart';
+import 'package:intl/intl.dart';
 
-class AddEvents extends StatefulWidget {
-  const AddEvents({super.key});
+class EditEventPage extends StatefulWidget {
+  final Event event;
+
+  const EditEventPage({
+    super.key,
+    required this.event,
+  });
 
   @override
-  State<AddEvents> createState() => _AddEventPageState();
+  State<EditEventPage> createState() => _EditEventPageState();
 }
 
-class _AddEventPageState extends State<AddEvents> {
+class _EditEventPageState extends State<EditEventPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
   // Form controllers
-  final _titleController = TextEditingController();
-  final _categoryController = TextEditingController();
-  final _venueController = TextEditingController();
-  final _capacityController = TextEditingController();
-  final _speakerController = TextEditingController();
-  final _mcController = TextEditingController();
-  final _statusController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _categoryController;
+  late TextEditingController _venueController;
+  late TextEditingController _capacityController;
+  late TextEditingController _speakerController;
+  late TextEditingController _mcController;
+  late TextEditingController _statusController;
+  late TextEditingController _descriptionController;
 
-  DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
+  late DateTime _selectedDate;
+  late TimeOfDay _selectedTime;
 
   // Category options
   final List<String> _categories = [
@@ -51,8 +56,33 @@ class _AddEventPageState extends State<AddEvents> {
   @override
   void initState() {
     super.initState();
-    _categoryController.text = _categories.first;
-    _statusController.text = _statusList.first;
+    
+    // Initialize controllers with event data
+    _titleController = TextEditingController(text: widget.event.title);
+    _categoryController = TextEditingController(text: widget.event.category);
+    _venueController = TextEditingController(text: widget.event.venue);
+    _capacityController = TextEditingController(text: widget.event.capacity.toString());
+    _speakerController = TextEditingController(text: widget.event.speaker);
+    _mcController = TextEditingController(text: widget.event.mc);
+    _statusController = TextEditingController(text: widget.event.status);
+    _descriptionController = TextEditingController(text: widget.event.description ?? '');
+
+    // Parse date and time
+    try {
+      _selectedDate = DateFormat('yyyy-MM-dd').parse(widget.event.date);
+    } catch (e) {
+      _selectedDate = DateTime.now();
+    }
+
+    try {
+      final timeParts = widget.event.time.split(':');
+      _selectedTime = TimeOfDay(
+        hour: int.parse(timeParts[0]),
+        minute: int.parse(timeParts[1]),
+      );
+    } catch (e) {
+      _selectedTime = TimeOfDay.now();
+    }
   }
 
   @override
@@ -72,7 +102,7 @@ class _AddEventPageState extends State<AddEvents> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: DateTime.now(),
+      firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
     if (picked != null && picked != _selectedDate) {
@@ -106,7 +136,7 @@ class _AddEventPageState extends State<AddEvents> {
     );
   }
 
-  Future<void> _submitEvent() async {
+  Future<void> _updateEvent() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -114,28 +144,27 @@ class _AddEventPageState extends State<AddEvents> {
     });
 
     try {
-      // Create Event object
-      final event = Event(
-        title: _titleController.text,
-        category: _categoryController.text,
-        date: DateFormat('yyyy-MM-dd').format(_selectedDate),
-        time: '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}:00',
-        venue: _venueController.text,
-        capacity: int.parse(_capacityController.text),
-        speaker: _speakerController.text,
-        mc: _mcController.text,
-        description: _descriptionController.text,
-        status: _statusController.text,
-      );
+      final eventData = {
+        'title': _titleController.text,
+        'category': _categoryController.text,
+        'date': DateFormat('yyyy-MM-dd').format(_selectedDate),
+        'time': '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}:00',
+        'venue': _venueController.text,
+        'capacity': _capacityController.text,
+        'speaker': _speakerController.text,
+        'mc': _mcController.text,
+        'description': _descriptionController.text,
+        'status': _statusController.text,
+      };
 
-      await EventController.createEvent(event);
+      await EventController.updateEvent(widget.event.id!, eventData);
       
       if (!mounted) return;
-      _showSnackbar('Event berhasil ditambahkan!');
-      Navigator.pop(context, true);
+      _showSnackbar('Event updated successfully');
+      Navigator.pop(context, true); // Return with refresh flag
     } catch (e) {
       if (!mounted) return;
-      _showSnackbar('Terjadi kesalahan: $e');
+      _showSnackbar('Error updating event: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -147,7 +176,7 @@ class _AddEventPageState extends State<AddEvents> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Event'),
+        title: const Text('Edit Event'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -301,9 +330,6 @@ class _AddEventPageState extends State<AddEvents> {
                             if (value == null || value.isEmpty) {
                               return 'Please enter capacity';
                             }
-                            if (int.tryParse(value) == null) {
-                              return 'Please enter a valid number';
-                            }
                             return null;
                           },
                         ),
@@ -388,12 +414,12 @@ class _AddEventPageState extends State<AddEvents> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Submit Button
+                        // Update Button
                         SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: _submitEvent,
+                            onPressed: _updateEvent,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.amber,
                               foregroundColor: Colors.black,
@@ -402,7 +428,7 @@ class _AddEventPageState extends State<AddEvents> {
                               ),
                             ),
                             child: const Text(
-                              'Create Event',
+                              'Update Event',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

@@ -1,371 +1,488 @@
 import 'package:flutter/material.dart';
-import 'events_agenda.dart';
-import 'events_requirements.dart';
+import 'package:flutter_application_idspora/models/Event.dart';
+import 'package:flutter_application_idspora/controller/EventController.dart';
+import 'package:flutter_application_idspora/Events/edit_events.dart';
 
-// Widget utama untuk menampilkan detail acara
-class EventDetailsPage extends StatelessWidget {
-  // Properti untuk menyimpan informasi detail acara
-  final String title; 
-  final String category; 
-  final String date; 
-  final String venue; 
-  final String capacity; 
-  final String speaker;
-  final String mc; 
-  final String description;
-  final String status;
+class EventDetailsPage extends StatefulWidget {
+  final Event event;
 
   const EventDetailsPage({
     super.key,
-    required this.title,
-    required this.category,
-    required this.date,
-    required this.venue,
-    required this.capacity,
-    required this.speaker,
-    required this.mc,
-    required this.description,
-    required this.status,
+    required this.event,
   });
+
+  @override
+  State<EventDetailsPage> createState() => _EventDetailsPageState();
+}
+
+class _EventDetailsPageState extends State<EventDetailsPage> {
+  late Event _event;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _event = widget.event;
+  }
+
+  // Refresh event data from API
+  Future<void> _refreshEventData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final updatedEvent = await EventController.fetchEventById(_event.id!);
+      setState(() {
+        _event = updatedEvent;
+      });
+    } catch (e) {
+      _showSnackbar('Error refreshing event data: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        backgroundColor: Colors.grey[800],
+      ),
+    );
+  }
+
+  // Navigate to edit event page
+  void _editEvent() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditEventPage(event: _event),
+      ),
+    );
+
+    if (result == true) {
+      _refreshEventData();
+    }
+  }
+
+  // Delete event
+  void _deleteEvent() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Event'),
+        content: Text('Are you sure you want to delete "${_event.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final success = await EventController.deleteEvent(_event.id!);
+        if (success) {
+          _showSnackbar('Event deleted successfully');
+          Navigator.pop(context, true); // Return to previous screen with refresh flag
+        } else {
+          _showSnackbar('Failed to delete event');
+        }
+      } catch (e) {
+        _showSnackbar('Error deleting event: $e');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // Menentukan warna berdasarkan status acara
     Color statusColor;
-    switch (status) {
-      case 'Upcoming':
-        statusColor = Colors.blue; // Warna biru untuk acara mendatang
+    switch (_event.status.toLowerCase()) {
+      case 'upcoming':
+        statusColor = Colors.green;
         break;
-      case 'Today':
-        statusColor = Colors.green; // Warna hijau untuk acara hari ini
+      case 'draft':
+        statusColor = Colors.grey;
         break;
-      case 'Past':
-        statusColor = Colors.grey; // Warna abu-abu untuk acara yang sudah berlalu
+      case 'cancelled':
+        statusColor = Colors.red;
         break;
       default:
-        statusColor = Colors.blue; // Default warna biru
+        statusColor = Colors.orange;
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // SliverAppBar untuk menampilkan gambar header acara
-            SliverAppBar(
-              expandedHeight: 200, // Tinggi header
-              pinned: true, // Header tetap terlihat saat scroll
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Gambar latar belakang header
-                    Image.network(
-                      'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-                      fit: BoxFit.cover,
-                    ),
-                    // Gradien untuk efek gelap di bagian bawah gambar
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.7),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Judul acara di bagian bawah header
-                    Positioned(
-                      bottom: 16,
-                      left: 16,
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: const Text(
+          'Event Details',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.orange,
               ),
-              // Tombol kembali di AppBar
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
-                  Navigator.pop(context); // Kembali ke halaman sebelumnya
-                },
-              ),
-              // Tombol aksi (edit dan delete)
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.white),
-                  onPressed: () {
-                    // Fungsi untuk mengedit acara
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.white),
-                  onPressed: () {
-                    // Fungsi untuk menghapus acara
-                  },
-                ),
-              ],
-            ),
-
-            // Bagian detail acara
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Badge status acara
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor, // Warna sesuai status
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        status,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Detail tanggal acara
-                    _buildDetailItem(Icons.calendar_today, 'Date', date),
-                    const SizedBox(height: 12),
-
-                    // Detail kategori acara
-                    _buildDetailItem(Icons.category, 'Category', category),
-                    const SizedBox(height: 12),
-
-                    // Detail tempat acara
-                    _buildDetailItem(Icons.location_on, 'Venue', venue),
-                    const SizedBox(height: 12),
-
-                    // Detail kapasitas acara
-                    _buildDetailItem(Icons.people, 'Capacity', capacity),
-                    const SizedBox(height: 12),
-
-                    // Bagian tim acara
-                    const Text(
-                      'Event Team',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Detail pembicara
-                    _buildTeamMember('Speaker', speaker),
-                    const SizedBox(height: 8),
-
-                    // Detail MC
-                    _buildTeamMember('Master of Ceremony', mc),
-                    const SizedBox(height: 16),
-
-                    // Bagian deskripsi acara
-                    const Text(
-                      'Description',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Bagian peserta acara
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            )
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Event Header (Orange Section)
+                  _buildEventHeader(),
+                  
+                  // Event Details Cards
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
                       children: [
-                        const Text(
-                          'Participants',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '5/100', // Contoh jumlah peserta
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Avatar peserta
-                    _buildParticipantsAvatars(),
-                    const SizedBox(height: 24),
-
-                    // Tombol aksi (Agenda dan Requirements)
-                    Row(
-                      children: [
-                        // Tombol untuk melihat agenda acara
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      EventsAgenda(eventTitle: title),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              foregroundColor: Colors.black,
-                              side: BorderSide(color: Colors.grey.shade300),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            child: const Text('Agenda'),
+                          child: _buildInfoCard(
+                            icon: Icons.category_outlined,
+                            title: 'Category',
+                            value: _event.category,
+                            iconColor: Colors.orange,
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // Tombol untuk melihat persyaratan acara
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      EventsRequirements(eventTitle: title),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0E1330),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            child: const Text('Requirements'),
+                          child: _buildInfoCard(
+                            icon: Icons.location_on_outlined,
+                            title: 'Venue',
+                            value: _event.venue,
+                            iconColor: Colors.orange,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildInfoCard(
+                            icon: Icons.people_outlined,
+                            title: 'Capacity',
+                            value: '${_event.capacity} people',
+                            iconColor: Colors.orange,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  
+                  // Event Team Section
+                  _buildSectionTitle('Event Team'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      children: [
+                        _buildTeamMember(
+                          role: 'Speaker',
+                          name: _event.speaker,
+                          iconData: Icons.person_outline_rounded,
+                          backgroundColor: const Color(0xFFFFF3E0),
+                          iconColor: Colors.orange,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTeamMember(
+                          role: 'Master of Ceremony',
+                          name: _event.mc,
+                          iconData: Icons.mic_none_rounded,
+                          backgroundColor: const Color(0xFFFFF3E0),
+                          iconColor: Colors.orange,
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Description Section
+                  _buildSectionTitle('Description'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      _event.description ?? 'No description provided.',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-          ],
+    );
+  }
+
+  Widget _buildEventHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        color: Colors.orange,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  _event.title,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  _buildActionButton(
+                    label: 'Edit',
+                    icon: Icons.edit_outlined,
+                    onPressed: _editEvent,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.orange,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildActionButton(
+                    label: 'Delete',
+                    icon: Icons.delete_outline_rounded,
+                    onPressed: _deleteEvent,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.red,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildStatusBadge(_event.status),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${_event.date} at ${_event.time}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color badgeColor;
+    
+    switch (status.toLowerCase()) {
+      case 'upcoming':
+        badgeColor = Colors.green;
+        break;
+      case 'draft':
+        badgeColor = Colors.grey;
+        break;
+      case 'cancelled':
+        badgeColor = Colors.red;
+        break;
+      default:
+        badgeColor = Colors.green;
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
       ),
     );
   }
 
-  // Widget untuk menampilkan detail acara (ikon + label + nilai)
-  Widget _buildDetailItem(IconData icon, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: Colors.grey[600]), // Ikon detail
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label, // Label detail
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value, // Nilai detail
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-          ],
+  Widget _buildActionButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    required Color backgroundColor,
+    required Color textColor,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        foregroundColor: textColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
-      ],
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
     );
   }
 
-  // Widget untuk menampilkan anggota tim acara (role + nama)
-  Widget _buildTeamMember(String role, String name) {
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: iconColor, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamMember({
+    required String role,
+    required String name,
+    required IconData iconData,
+    required Color backgroundColor,
+    required Color iconColor,
+  }) {
     return Row(
       children: [
-        // Avatar anggota tim
         Container(
-          width: 40,
-          height: 40,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
+            color: backgroundColor,
             shape: BoxShape.circle,
-            color: Colors.grey[200],
           ),
-          child: const Icon(Icons.person, color: Colors.grey),
+          child: Icon(
+            iconData,
+            color: iconColor,
+            size: 24,
+          ),
         ),
-        const SizedBox(width: 12),
-        // Detail role dan nama
+        const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(role, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(
+              role,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
             Text(
               name,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
           ],
         ),
       ],
-    );
-  }
-
-  // Widget untuk menampilkan avatar peserta
-  Widget _buildParticipantsAvatars() {
-    return SizedBox(
-      height: 60,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 5, // Jumlah peserta (contoh)
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-              image: const DecorationImage(
-                image: NetworkImage(
-                  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
 }

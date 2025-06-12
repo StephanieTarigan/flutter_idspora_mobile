@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_idspora/controller/EventController.dart';
 import 'package:flutter_application_idspora/models/Event.dart';
 import 'package:flutter_application_idspora/Widgets/BottomNavigation.dart';
+import 'package:flutter_application_idspora/Events/EventDetailsPage.dart';
 import 'package:intl/intl.dart';
 
 class EventsPage extends StatefulWidget {
@@ -12,10 +13,8 @@ class EventsPage extends StatefulWidget {
 }
 
 class _EventsPageState extends State<EventsPage> {
-  final EventController _eventController = EventController();
   List<Event> _events = [];
   bool _isLoading = false;
-  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -118,96 +117,17 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   void _showEventDetailDialog(Event event) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(
-            event.title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDetailItem(Icons.category_rounded, 'Category', event.category),
-                _buildDetailItem(Icons.calendar_today_rounded, 'Date', event.date),
-                _buildDetailItem(Icons.access_time_rounded, 'Time', event.time),
-                _buildDetailItem(Icons.location_on_rounded, 'Venue', event.venue),
-                _buildDetailItem(Icons.people_rounded, 'Capacity', event.capacity.toString()),
-                _buildDetailItem(Icons.person_rounded, 'Speaker', event.speaker),
-                _buildDetailItem(Icons.mic_rounded, 'MC', event.mc),
-                _buildDetailItem(Icons.description_rounded, 'Description', event.description ?? "-"),
-                _buildDetailItem(Icons.info_rounded, 'Status', _getStatusChip(event.status)),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text(
-                'Close',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailItem(IconData icon, String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 18, color: Colors.orange),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                value is Widget
-                    ? value
-                    : Text(
-                        value.toString(),
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-              ],
-            ),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventDetailsPage(event: event),
       ),
-    );
+    ).then((result) {
+      // Refresh data jika ada perubahan dari detail page
+      if (result == true) {
+        _loadEvents();
+      }
+    });
   }
 
   Widget _getStatusChip(String status) {
@@ -220,10 +140,12 @@ class _EventsPageState extends State<EventsPage> {
         chipIcon = Icons.edit_rounded;
         break;
       case 'published':
+      case 'approved':
         chipColor = Colors.green;
         chipIcon = Icons.check_circle_rounded;
         break;
       case 'cancelled':
+      case 'rejected':
         chipColor = Colors.red;
         chipIcon = Icons.cancel_rounded;
         break;
@@ -448,11 +370,15 @@ class _EventsPageState extends State<EventsPage> {
 
   void _editEvent(Event event) {
     // Navigate to edit event page
-    Navigator.pushNamed(context, '/edit_event', arguments: event);
+    Navigator.pushNamed(context, '/edit_event', arguments: event).then((result) {
+      if (result == true) {
+        _loadEvents();
+      }
+    });
   }
 
-  void _deleteEvent(Event event) {
-    showDialog(
+  void _deleteEvent(Event event) async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -463,15 +389,11 @@ class _EventsPageState extends State<EventsPage> {
         content: Text('Are you sure you want to delete "${event.title}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // Implement delete logic here
-              Navigator.pop(context);
-              _showSnackbar('Event deleted successfully');
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -481,10 +403,28 @@ class _EventsPageState extends State<EventsPage> {
         ],
       ),
     );
+
+    if (confirmed == true && event.id != null) {
+      try {
+        final success = await EventController.deleteEvent(event.id!);
+        if (success) {
+          _showSnackbar('Event deleted successfully');
+          _loadEvents(); // Refresh the list
+        } else {
+          _showSnackbar('Failed to delete event');
+        }
+      } catch (e) {
+        _showSnackbar('Error deleting event: $e');
+      }
+    }
   }
 
   void _showAddEventBottomSheet() {
-    Navigator.pushNamed(context, '/add_events');
+    Navigator.pushNamed(context, '/add_events').then((result) {
+      if (result == true) {
+        _loadEvents();
+      }
+    });
   }
 
   @override
