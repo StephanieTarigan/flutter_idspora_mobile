@@ -1,5 +1,5 @@
 class Event {
-  final int? id; 
+  final int? id;
   final String title;
   final String date;
   final String time;
@@ -9,7 +9,6 @@ class Event {
   final String speaker;
   final String mc;
   final String? description;
-  final String status;
 
   Event({
     this.id,
@@ -22,7 +21,6 @@ class Event {
     required this.speaker,
     required this.mc,
     this.description,
-    required this.status,
   });
 
   // Factory method untuk parsing JSON dari API
@@ -34,27 +32,28 @@ class Event {
       time: json['time'],
       category: json['category'],
       venue: json['venue'],
-      capacity: json['capacity'],
+      capacity: json['capacity'] is String 
+          ? int.parse(json['capacity']) 
+          : json['capacity'], // Handle both String and int from API
       speaker: json['speaker'],
       mc: json['mc'],
       description: json['description'],
-      status: json['status'],
     );
   }
 
-  // Konversi ke JSON (misal untuk POST ke API)
+  // Konversi ke JSON (untuk POST/PUT ke API)
   Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'date': date,
-      'time': time,
-      'category': category,
-      'venue': venue,
-      'capacity': capacity,
-      'speaker': speaker,
-      'mc': mc,
-      'description': description,
-      'status': status,
-    };
-  }
+  return {
+    if (id != null) 'id': id,
+    'title': title,
+    'date': date,
+    'time': time,
+    'category': category,
+    'venue': venue,
+    'capacity': capacity,
+    'speaker': speaker,
+    'mc': mc,
+    'description': description ?? '', // mastiin g null
+  };
+}
 }

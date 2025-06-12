@@ -120,22 +120,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Menentukan warna berdasarkan status acara
-    Color statusColor;
-    switch (_event.status.toLowerCase()) {
-      case 'upcoming':
-        statusColor = Colors.green;
-        break;
-      case 'draft':
-        statusColor = Colors.grey;
-        break;
-      case 'cancelled':
-        statusColor = Colors.red;
-        break;
-      default:
-        statusColor = Colors.orange;
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -291,8 +275,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _buildStatusBadge(_event.status),
           const SizedBox(height: 16),
           Row(
             children: [

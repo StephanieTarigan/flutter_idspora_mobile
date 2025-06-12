@@ -3,7 +3,9 @@ import 'package:flutter_application_idspora/controller/EventController.dart';
 import 'package:flutter_application_idspora/models/Event.dart';
 import 'package:flutter_application_idspora/Widgets/BottomNavigation.dart';
 import 'package:flutter_application_idspora/Events/EventDetailsPage.dart';
+import 'package:flutter_application_idspora/Events/edit_events.dart';
 import 'package:intl/intl.dart';
+
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -368,13 +370,16 @@ class _EventsPageState extends State<EventsPage> {
     );
   }
 
-  void _editEvent(Event event) {
-    // Navigate to edit event page
-    Navigator.pushNamed(context, '/edit_event', arguments: event).then((result) {
-      if (result == true) {
-        _loadEvents();
-      }
-    });
+  void _editEvent(Event event) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditEventPage(event: event),
+      ),
+    );
+    if (result == true) {
+      _loadEvents();
+    }
   }
 
   void _deleteEvent(Event event) async {

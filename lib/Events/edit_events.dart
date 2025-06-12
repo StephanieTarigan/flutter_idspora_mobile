@@ -26,7 +26,6 @@ class _EditEventPageState extends State<EditEventPage> {
   late TextEditingController _capacityController;
   late TextEditingController _speakerController;
   late TextEditingController _mcController;
-  late TextEditingController _statusController;
   late TextEditingController _descriptionController;
 
   late DateTime _selectedDate;
@@ -46,13 +45,6 @@ class _EditEventPageState extends State<EditEventPage> {
     'lainnya',
   ];
 
-  final List<String> _statusList = [
-    'draft',
-    'submitted',
-    'approved',
-    'rejected',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -64,7 +56,6 @@ class _EditEventPageState extends State<EditEventPage> {
     _capacityController = TextEditingController(text: widget.event.capacity.toString());
     _speakerController = TextEditingController(text: widget.event.speaker);
     _mcController = TextEditingController(text: widget.event.mc);
-    _statusController = TextEditingController(text: widget.event.status);
     _descriptionController = TextEditingController(text: widget.event.description ?? '');
 
     // Parse date and time
@@ -93,7 +84,6 @@ class _EditEventPageState extends State<EditEventPage> {
     _capacityController.dispose();
     _speakerController.dispose();
     _mcController.dispose();
-    _statusController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -144,18 +134,27 @@ class _EditEventPageState extends State<EditEventPage> {
     });
 
     try {
+      // Pastikan capacity adalah integer
+      final capacity = int.tryParse(_capacityController.text.trim());
+      if (capacity == null) {
+        _showSnackbar('Capacity harus berupa angka yang valid');
+        return;
+      }
+
+      // Prepare data dengan tipe yang benar
       final eventData = {
-        'title': _titleController.text,
-        'category': _categoryController.text,
+        'title': _titleController.text.trim(),
+        'category': _categoryController.text.trim(),
         'date': DateFormat('yyyy-MM-dd').format(_selectedDate),
         'time': '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}:00',
-        'venue': _venueController.text,
-        'capacity': _capacityController.text,
-        'speaker': _speakerController.text,
-        'mc': _mcController.text,
-        'description': _descriptionController.text,
-        'status': _statusController.text,
+        'venue': _venueController.text.trim(),
+        'capacity': capacity, // Kirim sebagai integer
+        'speaker': _speakerController.text.trim(),
+        'mc': _mcController.text.trim(),
+        'description': _descriptionController.text.trim(),
       };
+
+      print('Updating event with data: $eventData'); // Debug log
 
       await EventController.updateEvent(widget.event.id!, eventData);
       
@@ -164,6 +163,7 @@ class _EditEventPageState extends State<EditEventPage> {
       Navigator.pop(context, true); // Return with refresh flag
     } catch (e) {
       if (!mounted) return;
+      print('Error updating event: $e'); // Debug log
       _showSnackbar('Error updating event: $e');
     } finally {
       setState(() {
@@ -207,7 +207,7 @@ class _EditEventPageState extends State<EditEventPage> {
                             border: OutlineInputBorder(),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter an event title';
                             }
                             return null;
@@ -217,9 +217,9 @@ class _EditEventPageState extends State<EditEventPage> {
 
                         // Event Category
                         DropdownButtonFormField<String>(
-                          value: _categoryController.text.isNotEmpty
+                          value: _categories.contains(_categoryController.text)
                               ? _categoryController.text
-                              : null,
+                              : _categories.first,
                           decoration: const InputDecoration(
                             labelText: 'Category',
                             border: OutlineInputBorder(),
@@ -310,7 +310,7 @@ class _EditEventPageState extends State<EditEventPage> {
                             border: OutlineInputBorder(),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter a venue';
                             }
                             return null;
@@ -322,13 +322,17 @@ class _EditEventPageState extends State<EditEventPage> {
                         TextFormField(
                           controller: _capacityController,
                           decoration: const InputDecoration(
-                            labelText: 'Capacity',
+                            labelText: 'Capacity (numbers only)',
                             border: OutlineInputBorder(),
+                            hintText: 'e.g., 100',
                           ),
                           keyboardType: TextInputType.number,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter capacity';
+                            }
+                            if (int.tryParse(value.trim()) == null) {
+                              return 'Please enter a valid number';
                             }
                             return null;
                           },
@@ -343,7 +347,7 @@ class _EditEventPageState extends State<EditEventPage> {
                             border: OutlineInputBorder(),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter speaker name';
                             }
                             return null;
@@ -359,37 +363,8 @@ class _EditEventPageState extends State<EditEventPage> {
                             border: OutlineInputBorder(),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter MC name';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Status
-                        DropdownButtonFormField<String>(
-                          value: _statusController.text.isNotEmpty
-                              ? _statusController.text
-                              : null,
-                          decoration: const InputDecoration(
-                            labelText: 'Status',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: _statusList.map((String status) {
-                            return DropdownMenuItem<String>(
-                              value: status,
-                              child: Text(status),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              _statusController.text = newValue ?? '';
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please select a status';
                             }
                             return null;
                           },
@@ -406,7 +381,7 @@ class _EditEventPageState extends State<EditEventPage> {
                           ),
                           maxLines: 5,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter a description';
                             }
                             return null;
