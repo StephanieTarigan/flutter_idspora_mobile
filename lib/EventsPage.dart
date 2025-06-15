@@ -193,21 +193,21 @@ class _EventsPageState extends State<EventsPage> {
             title: 'Total Events',
             value: totalEvents.toString(),
             icon: Icons.calendar_month_rounded,
-            color: const Color(0xFF8B5CF6),
+            color: const Color(0xFF667EEA),
           ),
           const SizedBox(width: 12),
           SummaryCard(
             title: 'Upcoming Events',
             value: upcomingEvents.toString(),
             icon: Icons.event_available_rounded,
-            color: const Color(0xFFF97316),
+            color: Colors.amber,
           ),
           const SizedBox(width: 12),
           SummaryCard(
             title: 'Past Events',
             value: pastEvents.toString(),
             icon: Icons.history_rounded,
-            color: const Color(0xFF6B7280),
+            color: const Color.fromARGB(255, 198, 83, 142),
           ),
           const SizedBox(width: 12),
           SummaryCard(
@@ -343,7 +343,7 @@ class _EventsPageState extends State<EventsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           text,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_idspora/Events/add_events.dart';
+import 'package:flutter_application_idspora/Tasks/create_task_screen.dart';
 import 'package:flutter_application_idspora/landingPage.dart';
 import 'HomeScreen.dart';
 import 'TaskPage.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         '/event': (context) => const EventsPage(),
         '/finance': (context) => const FinancePage(),
         '/add_events': (context) => const AddEvents(),
+        '/add_task': (context) => const CreateTaskScreen(),
       },
       debugShowCheckedModeBanner: false, // Hilangkan banner debug
     );

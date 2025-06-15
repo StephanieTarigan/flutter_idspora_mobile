@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'tasks/task_model.dart';
 import 'tasks/task_detail_screen.dart';
 import 'tasks/create_task_screen.dart';
-import 'widgets/BottomNavigation.dart';
+import 'Widgets/BottomNavigation.dart';
+import 'Widgets/SummaryCard.dart';
+
 
 class TaskPage extends StatefulWidget {
   const TaskPage({super.key});
@@ -21,91 +23,316 @@ class _TaskPageState extends State<TaskPage> {
     tasks = globalTasks;
   }
 
+  // Get task counts for summary cards
+  int get totalTasks => tasks.length;
+  int get pendingTasks => tasks.where((task) => task.status == TaskStatus.todo).length;
+  int get completedTasks => tasks.where((task) => task.status == TaskStatus.done).length;
+  
+  List<Task> get pendingTasksList => tasks.where((task) => task.status == TaskStatus.inProgress).toList();
+  List<Task> get completedTasksList => tasks.where((task) => task.status == TaskStatus.done).toList();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF272B4A),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
             Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSummaryCards(),
+                    const SizedBox(height: 32),
+                    if (pendingTasksList.isNotEmpty) ...[
+                      _buildSectionTitle('Pending Tasks'),
+                      const SizedBox(height: 16),
+                      ...pendingTasksList.map((task) => _buildTaskCard(task)),
+                      const SizedBox(height: 32),
+                    ],
+                    if (completedTasksList.isNotEmpty) ...[
+                      _buildSectionTitle('History'),
+                      const SizedBox(height: 16),
+                      ...completedTasksList.map((task) => _buildTaskCard(task)),
+                    ],
+                    if (tasks.isEmpty) _buildEmptyState(),
+                  ],
                 ),
-                child: tasks.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: tasks.length,
-                        itemBuilder: (context, index) {
-                          return _buildTaskCard(tasks[index]);
-                        },
-                      ),
               ),
             ),
           ],
         ),
       ),
       bottomNavigationBar: const BottomNavigation(currentRoute: '/task'),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateTaskScreen(),
-            ),
-          ).then((_) {
-            setState(() {
-              tasks = globalTasks;
+      floatingActionButton: Container(
+        child: FloatingActionButton.extended(
+          backgroundColor: Colors.amber,
+          foregroundColor: Colors.black,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CreateTaskScreen(),
+              ),
+            ).then((_) {
+              setState(() {
+                tasks = globalTasks;
+              });
             });
-          });
-        },
+          },
+          icon: const Icon(Icons.add, color: Colors.black),
+          label: const Text(
+            'Add Task',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ),
       ),
     );
   }
 
-
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.arrow_back_rounded,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+          ),
+          const Text(
+            'Tasks',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A202C),
+            ),
+          ),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.refresh_rounded,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCards() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildSummaryCard(
+            icon: Icons.assignment_outlined,
+            iconColor: Colors.blue,
+            count: totalTasks.toString(),
+            title: 'Total Tasks',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildSummaryCard(
+            icon: Icons.pending_actions_outlined,
+            iconColor: Colors.amber,
+            count: pendingTasks.toString(),
+            title: 'Pending Tasks',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildSummaryCard(
+            icon: Icons.check_circle_outline,
+            iconColor: Colors.pink,
+            count: completedTasks.toString(),
+            title: 'Completed',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryCard({
+    required IconData icon,
+    required Color iconColor,
+    required String count,
+    required String title,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: iconColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF1A202C),
+      ),
+    );
+  }
+
+  Widget _buildTaskCard(Task task) {
+    String daysLeftText;
+    if (task.status == TaskStatus.done) {
+      daysLeftText = 'Completed';
+    } else {
+      final daysLeft = task.dueDate.difference(DateTime.now()).inDays;
+      if (daysLeft < 0) {
+        daysLeftText = 'Overdue';
+      } else {
+        daysLeftText = '$daysLeft Day${daysLeft != 1 ? 's' : ''} Left';
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 28,
+              Expanded(
+                child: Text(
+                  task.title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A202C),
+                  ),
+                ),
               ),
               Row(
                 children: [
-                  const Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
+                  if (task.status != TaskStatus.done) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Edit',
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
-                    child: const CircleAvatar(
-                      radius: 18,
-                      backgroundImage: NetworkImage(
-                        'https://randomuser.me/api/portraits/women/44.jpg',
+                    const SizedBox(width: 8),
+                  ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: task.status == TaskStatus.done 
+                          ? Colors.red.withOpacity(0.1)
+                          : Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      task.status == TaskStatus.done ? 'Delete' : 'Delete',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -113,16 +340,59 @@ class _TaskPageState extends State<TaskPage> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'All Tasks',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-              ),
+          const SizedBox(height: 8),
+          Text(
+            '${task.dueDate.day.toString().padLeft(2, '0')}-${task.dueDate.month.toString().padLeft(2, '0')}-${task.dueDate.year} - ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}:00',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            task.assignedTo,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TaskDetailScreen(task: task),
+                ),
+              ).then((updatedTask) {
+                if (updatedTask != null) {
+                  setState(() {
+                    final index = tasks.indexWhere((t) => t.id == updatedTask.id);
+                    if (index != -1) {
+                      globalTasks[index] = updatedTask;
+                      tasks = globalTasks;
+                    }
+                  });
+                }
+              });
+            },
+            child: Row(
+              children: [
+                Text(
+                  'View Details',
+                  style: TextStyle(
+                    color: Colors.amber[700],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.amber[700],
+                  size: 16,
+                ),
+              ],
             ),
           ),
         ],
@@ -137,17 +407,34 @@ class _TaskPageState extends State<TaskPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.assignment_outlined,
-              size: 64,
-              color: Colors.grey[400],
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.assignment_outlined,
+                size: 40,
+                color: Colors.amber,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'No tasks found',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey[600],
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Create your first task to get started',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
               ),
             ),
             const SizedBox(height: 24),
@@ -164,153 +451,20 @@ class _TaskPageState extends State<TaskPage> {
                   });
                 });
               },
-              child: const Text('Create a Task'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTaskCard(Task task) {
-    String daysLeftText;
-    if (task.status == TaskStatus.done) {
-      daysLeftText = 'Done';
-    } else {
-      final daysLeft = task.dueDate.difference(DateTime.now()).inDays;
-      if (daysLeft < 0) {
-        daysLeftText = 'Overdue';
-      } else {
-        daysLeftText = '$daysLeft Day${daysLeft != 1 ? 's' : ''} Left';
-      }
-    }
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TaskDetailScreen(task: task),
-          ),
-        ).then((updatedTask) {
-          if (updatedTask != null) {
-            setState(() {
-              final index = tasks.indexWhere((t) => t.id == updatedTask.id);
-              if (index != -1) {
-                globalTasks[index] = updatedTask;
-                tasks = globalTasks;
-              }
-            });
-          }
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade100,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      task.title,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: task.status.color,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      task.status.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                task.assignedTo,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey.shade600,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 18,
-                        color: Colors.grey.shade600,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    daysLeftText,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: task.status == TaskStatus.done
-                          ? Colors.green
-                          : daysLeftText == 'Overdue'
-                              ? Colors.red
-                              : Colors.black,
-                    ),
-                  ),
-                ],
+              child: const Text(
+                'Create a Task',
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: task.progress,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(task.status.color),
-                  minHeight: 6,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
