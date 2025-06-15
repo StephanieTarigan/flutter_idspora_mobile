@@ -1,361 +1,134 @@
 import 'package:flutter/material.dart';
-import 'HomeScreen.dart';
-import 'TaskPage.dart';
-import 'EventsPage.dart';
-import 'finance/transactionHistory.dart';
+import 'finance/add_budget.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class FinancePage extends StatefulWidget {
+  const FinancePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Finance Page',
-      debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
-      routes: {
-        '/home': (context) => const HomeScreen(),
-        '/task': (context) => const TaskPage(),
-        '/event': (context) => const EventsPage(),
-        '/finance': (context) => const FinancePage(),
-      },
-    );
-  }
+  State<FinancePage> createState() => _FinancePageState();
 }
 
-class FinancePage extends StatelessWidget {
-  const FinancePage({super.key});
+class _FinancePageState extends State<FinancePage> {
+  List<BudgetModel> budgets = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text('Finance'),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: Text(
-                  'Total Balance',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'Rp. 4,000,000', // Total balance
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const TextSpan(
-                        text: ',00',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Expense & Income Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO: Handle Expense button tap
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.arrow_circle_up_outlined,
-                              color: Colors.red[300],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Expense',
-                              style: TextStyle(
-                                color: Colors.red[300],
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO: Handle Income button tap
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.arrow_circle_down_outlined,
-                              color: Colors.blue[300],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Income',
-                              style: TextStyle(
-                                color: Colors.blue[300],
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              // History Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'History',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(
-                          builder: (context) => const Transactionhistory(),
-                        )
-                      );
-                    },
-                    child: const Text(
-                      'See All',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Transaction List
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: const [
-                    TransactionItem(
-                      icon: Icons.computer,
-                      title: 'Office Equipment',
-                      subtitle: 'IT Department',
-                      amount: 'Rp.2,450,000',
-                      date: '12 June 2024',
-                      iconBgColor: Colors.blue,
-                    ),
-                    TransactionItem(
-                      icon: Icons.business,
-                      title: 'Office Rent',
-                      subtitle: 'Facilities',
-                      amount: 'Rp.4,500,000',
-                      date: '10 June 2024',
-                      iconBgColor: Colors.indigo,
-                    ),
-                    TransactionItem(
-                      icon: Icons.flight,
-                      title: 'Business Travel',
-                      subtitle: 'Sales Department',
-                      amount: 'Rp.1,250,000',
-                      date: '08 June 2024',
-                      iconBgColor: Colors.teal,
-                    ),
-                    TransactionItem(
-                      icon: Icons.restaurant,
-                      title: 'Client Lunch Meeting',
-                      subtitle: 'Marketing',
-                      amount: 'Rp.180,000',
-                      date: '07 June 2024',
-                      iconBgColor: Colors.orange,
-                    ),
-                    TransactionItem(
-                      icon: Icons.inventory,
-                      title: 'Office Supplies',
-                      subtitle: 'Administration',
-                      amount: 'Rp.320,000',
-                      date: '05 June 2024',
-                      iconBgColor: Colors.grey,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Finance Page',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigation(context),
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(context, 0, Icons.home, 'Home', false),
-              _buildNavItem(context, 1, Icons.task, 'Task', false),
-              _buildNavItem(context, 2, Icons.event, 'Event', false),
-              _buildNavItem(context, 3, Icons.account_balance_wallet, 'Finance', true),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, int index, IconData icon, String label, bool isSelected) {
-    return InkWell(
-      onTap: () {
-        if (!isSelected) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-              );
-              break;
-            case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const TaskPage()),
-              );
-              break;
-            case 2:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const EventsPage()),
-              );
-              break;
-            case 3:
-              // Already on finance page
-              break;
-          }
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.amber : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.black : Colors.grey,
-              size: 20,
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
+            // ...statistic grid...
+            const SizedBox(height: 32),
+            const Text(
+              'Recent Budget',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
-            ],
+            ),
+            const SizedBox(height: 16),
+            ...budgets.isEmpty
+                ? [const Text('No budget yet.')]
+                : budgets.map((budget) => _buildBudgetCard(budget)).toList(),
+            const SizedBox(height: 32),
+            // ...history...
           ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddBudgetPage(
+                onBudgetCreated: (budget) {
+                  setState(() {
+                    budgets.insert(0, budget);
+                  });
+                },
+              ),
+            ),
+          );
+        },
+        backgroundColor: Colors.orange[500],
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Add Budget',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
   }
-}
 
-class TransactionItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String amount;
-  final String date;
-  final Color iconBgColor;
-
-  const TransactionItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.amount,
-    required this.date,
-    required this.iconBgColor,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: iconBgColor.withOpacity(0.2),
-        child: Icon(icon, color: iconBgColor),
-      ),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(amount, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(date, style: const TextStyle(color: Colors.grey)),
+  Widget _buildBudgetCard(BudgetModel budget) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              budget.eventName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${budget.createdAt.year}-${budget.createdAt.month.toString().padLeft(2, '0')}-${budget.createdAt.day.toString().padLeft(2, '0')}',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '\$${budget.totalAmount.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

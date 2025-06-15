@@ -79,7 +79,6 @@ class EventController {
     }
   }
 
-  // Alternative createEvent method yang menerima Map (untuk kompatibilitas dengan form)
   static Future<Event> createEventFromMap(Map<String, dynamic> eventData) async {
     try {
       final headers = await _getHeaders();
