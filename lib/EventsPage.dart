@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_idspora/controller/EventController.dart';
 import 'package:flutter_application_idspora/models/Event.dart';
 import 'package:flutter_application_idspora/Widgets/BottomNavigation.dart';
@@ -7,7 +8,6 @@ import 'package:flutter_application_idspora/Events/edit_events.dart';
 import 'package:flutter_application_idspora/widgets/SummaryCard.dart';
 import 'package:intl/intl.dart';
 
-
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
 
@@ -15,14 +15,43 @@ class EventsPage extends StatefulWidget {
   State<EventsPage> createState() => _EventsPageState();
 }
 
-class _EventsPageState extends State<EventsPage> {
+class _EventsPageState extends State<EventsPage> with TickerProviderStateMixin {
   List<Event> _events = [];
   bool _isLoading = false;
+  
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
+    _setupAnimations();
     _loadEvents();
+  }
+
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadEvents() async {
@@ -114,7 +143,7 @@ class _EventsPageState extends State<EventsPage> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
-        backgroundColor: Colors.grey[800],
+        backgroundColor: Colors.amber.shade800,
       ),
     );
   }
@@ -153,7 +182,7 @@ class _EventsPageState extends State<EventsPage> {
         chipIcon = Icons.cancel_rounded;
         break;
       default:
-        chipColor = Colors.orange;
+        chipColor = Colors.amber;
         chipIcon = Icons.info_rounded;
     }
     
@@ -230,10 +259,10 @@ class _EventsPageState extends State<EventsPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.04),
             spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -241,45 +270,47 @@ class _EventsPageState extends State<EventsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start, // Tambahkan ini untuk alignment atas
             children: [
               Expanded(
                 child: Text(
                   event.title,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Color(0xFF1A202C),
                   ),
                 ),
               ),
+              const SizedBox(width: 12), // Tambahkan spacing
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // Tambahkan ini juga
                 children: [
                   if (isUpcoming) ...[
                     _buildActionButton(
                       'Edit',
-                      Colors.orange.shade50,
-                      Colors.orange,
+                      Colors.amber.withOpacity(0.1),
+                      Colors.amber,
                       () => _editEvent(event),
                     ),
                     const SizedBox(width: 8),
                     _buildActionButton(
                       'Delete',
-                      Colors.red.shade50,
+                      Colors.red.withOpacity(0.1),
                       Colors.red,
                       () => _deleteEvent(event),
                     ),
                   ] else ...[
                     _buildActionButton(
                       'Delete',
-                      Colors.red.shade50,
+                      Colors.red.withOpacity(0.1),
                       Colors.red,
                       () => _deleteEvent(event),
                     ),
                     const SizedBox(width: 8),
                     _buildActionButton(
                       'View',
-                      Colors.green.shade50,
+                      Colors.green.withOpacity(0.1),
                       Colors.green,
                       () => _showEventDetailDialog(event),
                     ),
@@ -290,7 +321,7 @@ class _EventsPageState extends State<EventsPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            '${event.date} - ${event.time}',
+            '${event.date} - ${event.time}:00',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -312,20 +343,20 @@ class _EventsPageState extends State<EventsPage> {
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () => _showEventDetailDialog(event),
-            child: const Row(
+            child: Row(
               children: [
                 Text(
                   'View Details',
                   style: TextStyle(
-                    color: Colors.orange,
+                    color: Colors.amber.shade700,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Icon(
                   Icons.arrow_forward_rounded,
-                  color: Colors.orange,
+                  color: Colors.amber.shade700,
                   size: 16,
                 ),
               ],
@@ -338,9 +369,12 @@ class _EventsPageState extends State<EventsPage> {
 
   Widget _buildActionButton(String text, Color backgroundColor, Color textColor, VoidCallback onPressed) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onPressed();
+      },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(8),
@@ -363,9 +397,9 @@ class _EventsPageState extends State<EventsPage> {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 20,
+          fontSize: 24,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: Color(0xFF1A202C),
         ),
       ),
     );
@@ -396,13 +430,19 @@ class _EventsPageState extends State<EventsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Delete'),
           ),
@@ -436,130 +476,159 @@ class _EventsPageState extends State<EventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'Events',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Color(0xFF1A202C),
           ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF2D3748)),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.black87),
-            onPressed: _loadEvents,
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Color(0xFF2D3748)),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _loadEvents();
+              },
+            ),
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadEvents,
-        color: Colors.orange,
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.orange,
-                ),
-              )
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    
-                    // Horizontal Scrollable Statistics Cards
-                    _buildSummaryCards(),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Upcoming Events Section
-                    if (upcomingEventsList.isNotEmpty) ...[
-                      _buildSectionTitle('Upcoming Events'),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: upcomingEventsList
-                              .map((event) => _buildEventCard(event, isUpcoming: true))
-                              .toList(),
-                        ),
-                      ),
-                    ],
-                    
-                    // History Section
-                    if (pastEventsList.isNotEmpty) ...[
-                      _buildSectionTitle('History'),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: pastEventsList
-                              .map((event) => _buildEventCard(event, isUpcoming: false))
-                              .toList(),
-                        ),
-                      ),
-                    ],
-                    
-                    // Empty State
-                    if (_events.isEmpty) ...[
-                      const SizedBox(height: 60),
-                      Center(
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: Icon(
-                                Icons.event_busy_rounded,
-                                size: 48,
-                                color: Colors.grey.shade400,
-                              ),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: RefreshIndicator(
+            onRefresh: _loadEvents,
+            color: Colors.amber,
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.amber,
+                    ),
+                  )
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        
+                        // Horizontal Scrollable Statistics Cards
+                        _buildSummaryCards(),
+                        
+                        const SizedBox(height: 8),
+                        
+                        // Upcoming Events Section
+                        if (upcomingEventsList.isNotEmpty) ...[
+                          _buildSectionTitle('Upcoming Events'),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: upcomingEventsList
+                                  .map((event) => _buildEventCard(event, isUpcoming: true))
+                                  .toList(),
                             ),
-                            const SizedBox(height: 24),
-                            const Text(
-                              'No events found',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black54,
-                              ),
+                          ),
+                        ],
+                        
+                        // History Section
+                        if (pastEventsList.isNotEmpty) ...[
+                          _buildSectionTitle('History'),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: pastEventsList
+                                  .map((event) => _buildEventCard(event, isUpcoming: false))
+                                  .toList(),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Pull down to refresh or add a new event',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 14,
-                              ),
+                          ),
+                        ],
+                        
+                        // Empty State
+                        if (_events.isEmpty) ...[
+                          const SizedBox(height: 60),
+                          Center(
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.event_busy_rounded,
+                                    size: 40,
+                                    color: Colors.amber,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No events found',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Pull down to refresh or add a new event',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    
-                    const SizedBox(height: 100), // Space for FAB
-                  ],
-                ),
-              ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddEventBottomSheet,
-        backgroundColor: Colors.amber,
-        foregroundColor: Colors.black,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text(
-          'Add Event',
-          style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                        
+                        const SizedBox(height: 100), // Space for FAB
+                      ],
+                    ),
+                  ),
+          ),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+      ),
+      floatingActionButton: Container(
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            HapticFeedback.mediumImpact();
+            _showAddEventBottomSheet();
+          },
+          backgroundColor: Colors.amber,
+          foregroundColor: Colors.black,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text(
+            'Add Event',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       bottomNavigationBar: const BottomNavigation(currentRoute: '/event'),

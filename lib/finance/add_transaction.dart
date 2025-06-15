@@ -13,29 +13,21 @@ class _TransactionPageState extends State<Addtransaction> with TickerProviderSta
   bool isIncome = true;
   final amountController = TextEditingController(text: "0");
   final titleController = TextEditingController();
-  String selectedCategory = 'General';
-  String selectedDate = 'Today';
+  String selectedCategory = 'Event';
+  DateTime selectedDate = DateTime.now();
   
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
   final List<String> categories = [
-    'General', 'Food', 'Transport', 'Shopping', 'Entertainment', 
-    'Bills', 'Health', 'Education', 'Travel', 'Investment'
+    'Event', 'Operasional', 'Other'
   ];
 
   final Map<String, IconData> categoryIcons = {
-    'General': Icons.category_outlined,
-    'Food': Icons.restaurant_outlined,
-    'Transport': Icons.directions_car_outlined,
-    'Shopping': Icons.shopping_bag_outlined,
-    'Entertainment': Icons.movie_outlined,
-    'Bills': Icons.receipt_outlined,
-    'Health': Icons.local_hospital_outlined,
-    'Education': Icons.school_outlined,
-    'Travel': Icons.flight_outlined,
-    'Investment': Icons.trending_up_outlined,
+    'Event': Icons.event_outlined,
+    'Operasional': Icons.business_outlined,
+    'Other': Icons.more_horiz_outlined,
   };
 
   @override
@@ -68,6 +60,21 @@ class _TransactionPageState extends State<Addtransaction> with TickerProviderSta
     amountController.dispose();
     titleController.dispose();
     super.dispose();
+  }
+
+  String get formattedDate {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final selectedDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+
+    if (selectedDay == today) {
+      return 'Today';
+    } else if (selectedDay == yesterday) {
+      return 'Yesterday';
+    } else {
+      return '${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}';
+    }
   }
 
   @override
@@ -147,16 +154,25 @@ class _TransactionPageState extends State<Addtransaction> with TickerProviderSta
               color: Color(0xFF1A202C),
             ),
           ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.check_rounded,
-              color: Colors.amber,
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FinancePage()),
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                color: Colors.amber,
+              ),
             ),
           ),
         ],
@@ -386,7 +402,7 @@ class _TransactionPageState extends State<Addtransaction> with TickerProviderSta
           child: _buildSelectableCard(
             icon: Icons.calendar_today_outlined,
             title: 'Date',
-            value: selectedDate,
+            value: formattedDate,
             onTap: () => _showDatePicker(),
           ),
         ),
@@ -506,64 +522,37 @@ class _TransactionPageState extends State<Addtransaction> with TickerProviderSta
     );
   }
 
-  void _showDatePicker() {
-    showModalBottomSheet(
+  Future<void> _showDatePicker() async {
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.amber,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.amber,
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Select Date',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.today, color: Colors.amber),
-              title: const Text('Today'),
-              onTap: () {
-                setState(() => selectedDate = 'Today');
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.history, color: Colors.amber),
-              title: const Text('Yesterday'),
-              onTap: () {
-                setState(() => selectedDate = 'Yesterday');
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_month, color: Colors.amber),
-              title: const Text('Custom Date'),
-              onTap: () {
-                Navigator.pop(context);
-                // Show date picker
-              },
-            ),
-          ],
-        ),
-      ),
+          ),
+          child: child!,
+        );
+      },
     );
+
+    if (pickedDate != null && pickedDate != selectedDate) {
+      setState(() {
+        selectedDate = pickedDate;
+      });
+    }
   }
 
   void _showCategoryPicker() {
@@ -596,26 +585,33 @@ class _TransactionPageState extends State<Addtransaction> with TickerProviderSta
               ),
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              height: 300,
-              child: ListView.builder(
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return ListTile(
-                    leading: Icon(
-                      categoryIcons[category],
-                      color: Colors.amber,
-                    ),
-                    title: Text(category),
-                    onTap: () {
-                      setState(() => selectedCategory = category);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
+            ...categories.map((category) => ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  categoryIcons[category],
+                  color: Colors.amber,
+                  size: 20,
+                ),
               ),
-            ),
+              title: Text(
+                category,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                setState(() => selectedCategory = category);
+                Navigator.pop(context);
+              },
+            )).toList(),
+            const SizedBox(height: 20),
           ],
         ),
       ),

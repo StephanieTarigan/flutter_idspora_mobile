@@ -245,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ],
               image: const DecorationImage(
-                image: NetworkImage('https://randomuser.me/api/portraits/women/44.jpg'),
+                image: AssetImage('assets/images/profile.jpeg'),
                 fit: BoxFit.cover,
               ),
             ),

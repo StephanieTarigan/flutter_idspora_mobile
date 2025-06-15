@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../financePage.dart';
 import 'add_transaction.dart';
+import 'index.dart';
 
 class Transactionhistory extends StatelessWidget {
   const Transactionhistory({super.key});
@@ -97,78 +98,6 @@ class Transactionhistory extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Transaction List
-              Expanded(
-                child: ListView(
-                  children: const [
-                    TransactionItem(
-                      icon: Icons.computer,
-                      title: 'Office Equipment',
-                      subtitle: 'IT Department',
-                      amount: 'Rp.2,450,000',
-                      date: '12 June 2024',
-                      iconBgColor: Colors.blue,
-                    ),
-                    TransactionItem(
-                      icon: Icons.business,
-                      title: 'Office Rent',
-                      subtitle: 'Facilities',
-                      amount: 'Rp.4,500,000',
-                      date: '10 June 2024',
-                      iconBgColor: Colors.indigo,
-                    ),
-                    TransactionItem(
-                      icon: Icons.flight,
-                      title: 'Business Travel',
-                      subtitle: 'Sales Department',
-                      amount: 'Rp.1,250,000',
-                      date: '08 June 2024',
-                      iconBgColor: Colors.teal,
-                    ),
-                    TransactionItem(
-                      icon: Icons.restaurant,
-                      title: 'Client Lunch Meeting',
-                      subtitle: 'Marketing',
-                      amount: 'Rp.180,000',
-                      date: '07 June 2024',
-                      iconBgColor: Colors.orange,
-                    ),
-                    TransactionItem(
-                      icon: Icons.inventory,
-                      title: 'Office Supplies',
-                      subtitle: 'Administration',
-                      amount: 'Rp.320,000',
-                      date: '05 June 2024',
-                      iconBgColor: Colors.grey,
-                    ),
-                    TransactionItem(
-                      icon: Icons.subscriptions,
-                      title: 'Software Subscriptions',
-                      subtitle: 'IT Department',
-                      amount: 'Rp.750,000',
-                      date: '01 June 2024',
-                      iconBgColor: Colors.purple,
-                    ),
-                    TransactionItem(
-                      icon: Icons.event,
-                      title: 'Conference Registration',
-                      subtitle: 'HR Department',
-                      amount: 'Rp.500,000',
-                      date: '28 May 2024',
-                      iconBgColor: Colors.red,
-                    ),
-                    TransactionItem(
-                      icon: Icons.local_shipping,
-                      title: 'Shipping Costs',
-                      subtitle: 'Logistics',
-                      amount: 'Rp.175,000',
-                      date: '25 May 2024',
-                      iconBgColor: Colors.brown,
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

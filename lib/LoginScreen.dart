@@ -99,14 +99,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _usernameController,
                   decoration: const InputDecoration(
-                    labelText: 'Email', // Ganti label jika pakai username
+                    labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
-                  validator:
-                      (value) =>
-                          value == null || value.isEmpty
-                              ? 'Masukkan email'
-                              : null,
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Masukkan email' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -116,11 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(),
                   ),
                   obscureText: true,
-                  validator:
-                      (value) =>
-                          value == null || value.isEmpty
-                              ? 'Masukkan password'
-                              : null,
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Masukkan password' : null,
                 ),
                 const SizedBox(height: 24),
                 if (_errorMessage != null)
@@ -134,34 +128,52 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed:
-                        _isLoading
-                            ? null
-                            : () async {
-                              if (_formKey.currentState!.validate()) {
-                                bool success = await _login(
-                                  _usernameController.text,
-                                  _passwordController.text,
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              bool success = await _login(
+                                _usernameController.text,
+                                _passwordController.text,
+                              );
+                              setState(() {
+                                _isLoading = false;
+                              });
+                              if (success) {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomeScreen(),
+                                  ),
                                 );
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                if (success) {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const HomeScreen(),
-                                    ),
-                                  );
-                                }
                               }
-                            },
-                    child:
-                        _isLoading
-                            ? const CircularProgressIndicator(
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 4,
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
                               color: Colors.white,
-                            )
-                            : const Text('Login'),
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Login'),
                   ),
                 ),
               ],

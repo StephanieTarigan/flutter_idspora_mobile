@@ -3,6 +3,7 @@ import 'package:flutter_application_idspora/Widgets/SummaryCard.dart';
 import 'package:flutter_application_idspora/finance/transactionHistory.dart';
 import 'package:flutter_application_idspora/finance/index.dart';
 import 'package:flutter_application_idspora/finance/add_transaction.dart';
+import 'package:flutter_application_idspora/finance/budget_detail_page.dart';
 import '../HomeScreen.dart';
 import '../TaskPage.dart';
 import '../EventsPage.dart';
@@ -299,9 +300,14 @@ class _FinancePageState extends State<FinancePage> with TickerProviderStateMixin
           Row(
             children: [
               GestureDetector(
-                onTap: () {
-                  // Handle view details
-                },
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BudgetDetailPage(budgetItem: budget),
+      ),
+    );
+  },
                 child: Row(
                   children: [
                     Text(
@@ -443,7 +449,7 @@ class _FinancePageState extends State<FinancePage> with TickerProviderStateMixin
       }
     },
     backgroundColor: Colors.amber,
-    foregroundColor: Colors.white,
+    foregroundColor: Colors.black,
     elevation: 8,
     icon: const Icon(Icons.add),
     label: const Text(
@@ -457,20 +463,6 @@ class _FinancePageState extends State<FinancePage> with TickerProviderStateMixin
 }
 }
 
-// Data models
-class BudgetItem {
-  final String title;
-  final String date;
-  final double amount;
-  final String status;
-
-  BudgetItem({
-    required this.title,
-    required this.date,
-    required this.amount,
-    required this.status,
-  });
-}
 
 class HistoryItem {
   final String title;
