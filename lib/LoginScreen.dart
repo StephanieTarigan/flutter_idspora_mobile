@@ -29,10 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await http.post(
         Uri.parse('http://127.0.0.1:8000/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
@@ -67,12 +64,36 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Image.asset(
+                  'assets/images/3d_animasi.png',
+                  height: 280,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'id',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    Text(
+                      'SPORA',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber[700],
+                      ),
+                    ),
+                  ],
+                ),
                 const Text(
                   'Login',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
@@ -81,8 +102,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Email', // Ganti label jika pakai username
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Masukkan email' : null,
+                  validator:
+                      (value) =>
+                          value == null || value.isEmpty
+                              ? 'Masukkan email'
+                              : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -92,8 +116,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(),
                   ),
                   obscureText: true,
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Masukkan password' : null,
+                  validator:
+                      (value) =>
+                          value == null || value.isEmpty
+                              ? 'Masukkan password'
+                              : null,
                 ),
                 const SizedBox(height: 24),
                 if (_errorMessage != null)
@@ -107,32 +134,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () async {
-                            if (_formKey.currentState!.validate()) {
-                              bool success = await _login(
-                                _usernameController.text,
-                                _passwordController.text,
-                              );
-                              setState(() {
-                                _isLoading = false;
-                              });
-                              if (success) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const HomeScreen(),
-                                  ),
+                    onPressed:
+                        _isLoading
+                            ? null
+                            : () async {
+                              if (_formKey.currentState!.validate()) {
+                                bool success = await _login(
+                                  _usernameController.text,
+                                  _passwordController.text,
                                 );
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                if (success) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const HomeScreen(),
+                                    ),
+                                  );
+                                }
                               }
-                            }
-                          },
-                    child: _isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : const Text('Login'),
+                            },
+                    child:
+                        _isLoading
+                            ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                            : const Text('Login'),
                   ),
                 ),
               ],

@@ -4,6 +4,7 @@ import 'package:flutter_application_idspora/models/Event.dart';
 import 'package:flutter_application_idspora/Widgets/BottomNavigation.dart';
 import 'package:flutter_application_idspora/Events/EventDetailsPage.dart';
 import 'package:flutter_application_idspora/Events/edit_events.dart';
+import 'package:flutter_application_idspora/widgets/SummaryCard.dart';
 import 'package:intl/intl.dart';
 
 
@@ -220,7 +221,7 @@ class _EventsPageState extends State<EventsPage> {
     );
   }
 
-  Widget _buildModernEventCard(Event event, {bool isUpcoming = true}) {
+  Widget _buildEventCard(Event event, {bool isUpcoming = true}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -484,7 +485,7 @@ class _EventsPageState extends State<EventsPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Column(
                           children: upcomingEventsList
-                              .map((event) => _buildModernEventCard(event, isUpcoming: true))
+                              .map((event) => _buildEventCard(event, isUpcoming: true))
                               .toList(),
                         ),
                       ),
@@ -497,7 +498,7 @@ class _EventsPageState extends State<EventsPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Column(
                           children: pastEventsList
-                              .map((event) => _buildModernEventCard(event, isUpcoming: false))
+                              .map((event) => _buildEventCard(event, isUpcoming: false))
                               .toList(),
                         ),
                       ),
@@ -538,20 +539,6 @@ class _EventsPageState extends State<EventsPage> {
                                 fontSize: 14,
                               ),
                             ),
-                            const SizedBox(height: 32),
-                            ElevatedButton.icon(
-                              onPressed: _showAddEventBottomSheet,
-                              icon: const Icon(Icons.add_rounded),
-                              label: const Text('Add Event'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -564,8 +551,8 @@ class _EventsPageState extends State<EventsPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddEventBottomSheet,
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.amber,
+        foregroundColor: Colors.black,
         icon: const Icon(Icons.add_rounded),
         label: const Text(
           'Add Event',
@@ -576,84 +563,6 @@ class _EventsPageState extends State<EventsPage> {
         ),
       ),
       bottomNavigationBar: const BottomNavigation(currentRoute: '/event'),
-    );
-  }
-}
-
-// SummaryCard Widget
-class SummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const SummaryCard({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 160,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 20,
-                ),
-              ),
-              const Spacer(),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
     );
   }
 }

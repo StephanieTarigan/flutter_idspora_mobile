@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_idspora/models/Event.dart';
 import 'package:flutter_application_idspora/controller/EventController.dart';
 import 'package:flutter_application_idspora/Events/edit_events.dart';
+import 'package:flutter_application_idspora/Events/Needs.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Event event;
@@ -225,6 +226,56 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   ),
                   
                   const SizedBox(height: 32),
+                  Padding(
+  padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+  child: Text(
+    'Kebutuhan Acara',
+    style: const TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+      color: Colors.black87,
+    ),
+  ),
+),
+// Widget tabel kebutuhan (NeedsTable) dengan data dummy
+NeedsTable(
+  tasks: [
+    EventTask(
+      id: 1,
+      eventId: _event.id ?? 0,
+      title: 'Laptop untuk presentasi',
+      category: 'Peralatan & Logistik',
+      description: 'Laptop untuk kebutuhan presentasi narasumber.',
+      status: 'draft',
+      approvalNotes: 'Pastikan baterai penuh.',
+      createdAt: null,
+      updatedAt: null,
+    ),
+    EventTask(
+      id: 2,
+      eventId: _event.id ?? 0,
+      title: 'Air mineral',
+      category: 'Konsumsi',
+      description: 'Air mineral untuk peserta dan panitia.',
+      status: 'approved',
+      approvalNotes: '',
+      createdAt: null,
+      updatedAt: null,
+    ),
+    EventTask(
+      id: 3,
+      eventId: _event.id ?? 0,
+      title: 'Sertifikat peserta',
+      category: 'Dokumen & Administrasi',
+      description: 'Cetak sertifikat untuk seluruh peserta.',
+      status: 'draft',
+      approvalNotes: null,
+      createdAt: null,
+      updatedAt: null,
+    ),
+  ],
+),
+const SizedBox(height: 32),
                 ],
               ),
             ),

@@ -8,12 +8,30 @@ class BottomNavigation extends StatelessWidget {
     required this.currentRoute,
   });
 
+  // Mendapatkan index tab aktif berdasarkan currentRoute
+  int _getCurrentIndex() {
+    switch (currentRoute) {
+      case '/home':
+        return 0;
+      case '/task':
+        return 1;
+      case '/event':
+        return 2;
+      case '/finance':
+        return 3;
+      default:
+        return 0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return _buildBottomNavigation(context);
   }
 
-Widget _buildBottomNavigation(BuildContext context) {
+  // Widget utama bottom navigation custom
+  Widget _buildBottomNavigation(BuildContext context) {
+    final selectedIndex = _getCurrentIndex(); // index tab aktif
     return SafeArea(
       child: Container(
         decoration: BoxDecoration(
@@ -31,10 +49,11 @@ Widget _buildBottomNavigation(BuildContext context) {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, 0, Icons.home, 'Home', false),
-              _buildNavItem(context, 1, Icons.task, 'Task', false),
-              _buildNavItem(context, 2, Icons.event, 'Event', true),
-              _buildNavItem(context, 3, Icons.account_balance_wallet, 'Finance', false),
+              // Setiap tab, isSelected true jika index == selectedIndex
+              _buildNavItem(context, 0, Icons.home, 'Home', selectedIndex == 0),
+              _buildNavItem(context, 1, Icons.task, 'Task', selectedIndex == 1),
+              _buildNavItem(context, 2, Icons.event, 'Event', selectedIndex == 2),
+              _buildNavItem(context, 3, Icons.account_balance_wallet, 'Finance', selectedIndex == 3),
             ],
           ),
         ),
@@ -42,9 +61,11 @@ Widget _buildBottomNavigation(BuildContext context) {
     );
   }
 
+  // Widget untuk setiap item/tab di bottom navigation
   Widget _buildNavItem(BuildContext context, int index, IconData icon, String label, bool isSelected) {
     return InkWell(
       onTap: () {
+        // Navigasi hanya jika tab belum aktif
         if (!isSelected) {
           switch (index) {
             case 0:
@@ -65,14 +86,14 @@ Widget _buildBottomNavigation(BuildContext context) {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.amber : Colors.transparent,
+          color: isSelected ? Colors.amber : Colors.transparent, // Tab aktif kuning
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.black : Colors.grey,
+              color: isSelected ? Colors.black : Colors.grey, // Icon aktif hitam, nonaktif abu
               size: 20,
             ),
             if (isSelected) ...[
