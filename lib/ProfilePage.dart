@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'LoginScreen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -451,7 +453,7 @@ class _ProfilePageState extends State<ProfilePage> {
             'Pengaturan',
             'Kelola preferensi aplikasi',
             Colors.blue,
-            () => _showSnackbar('Fitur pengaturan akan segera hadir'),
+            () => _showSnackbar('ini fitur pengaturan'),
           ),
           _buildDivider(),
           _buildMenuItem(
@@ -459,7 +461,7 @@ class _ProfilePageState extends State<ProfilePage> {
             'Notifikasi',
             'Atur notifikasi dan reminder',
             Colors.orange,
-            () => _showSnackbar('Fitur notifikasi akan segera hadir'),
+            () => _showSnackbar('ini fitur notifikasi'),
           ),
           _buildDivider(),
           _buildMenuItem(
@@ -467,7 +469,7 @@ class _ProfilePageState extends State<ProfilePage> {
             'Bantuan',
             'FAQ dan dukungan teknis',
             Colors.green,
-            () => _showSnackbar('Fitur bantuan akan segera hadir'),
+            () => _showSnackbar('ini fitur bantuan'),
           ),
           _buildDivider(),
           _buildMenuItem(
@@ -555,44 +557,20 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLogoutButton() {
-    return Container(
-      width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.red.shade400, Colors.red.shade600],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+  return Container(
+    width: double.infinity,
+    height: 56,
+    child: ElevatedButton.icon(
+      onPressed: () => _showLogoutDialog(),
+      icon: const Icon(Icons.logout, size: 22),
+      label: const Text('Keluar'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
       ),
-      child: ElevatedButton.icon(
-        onPressed: () => _showLogoutDialog(),
-        icon: const Icon(Icons.logout, size: 22),
-        label: const Text(
-          'Keluar',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ),
-    );
-  }
+    ),
+  );
+}
 
   void _showEditProfileDialog() {
     showDialog(
@@ -600,7 +578,7 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Edit Profile'),
-        content: const Text('Fitur edit profile akan segera tersedia.'),
+        content: const Text('Ini buat edit profile.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -644,46 +622,46 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Konfirmasi Keluar'),
-        content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _performLogout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Keluar'),
-          ),
-        ],
+void _showLogoutDialog() {
+  // Tampilkan dialog konfirmasi logout
+showDialog(
+  context: context,
+  builder: (context) => AlertDialog(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    title: const Text('Konfirmasi Keluar'),
+    content: const Text('Apakah Anda yakin ingin keluar?'),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text(
+          'Batal',
+          style: TextStyle(color: Colors.grey),
+        ),
       ),
-    );
-  }
-
-  void _performLogout() {
-    _showSnackbar('Berhasil keluar dari aplikasi');
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      '/login',
-      (route) => false,
-    );
-  }
-
+      TextButton(
+        onPressed: () async {
+          Navigator.pop(context); // Tutup dialog
+          // Hapus token dan pindah ke halaman login
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('token');
+          Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Logout berhasil!')),
+          );
+        },
+        child: const Text(
+          'Keluar',
+          style: TextStyle(color: Colors.red),
+        ),
+      ),
+    ],
+  ),
+);
+}
   void _showSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

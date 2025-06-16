@@ -321,7 +321,7 @@ class _EventsPageState extends State<EventsPage> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 12),
           Text(
-            '${event.date} - ${event.time}:00',
+            '${event.date} - ${event.time}',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade600,
