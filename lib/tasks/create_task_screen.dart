@@ -14,7 +14,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final _descriptionController = TextEditingController();
   DateTime _dueDate = DateTime.now().add(const Duration(days: 7));
   String _assignedTo = 'Dini Auliya';
-  int _priority = 2;
   
   final List<String> _assignees = [
     'Dini Auliya',

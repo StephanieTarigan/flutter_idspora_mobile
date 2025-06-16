@@ -17,7 +17,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
   late TextEditingController _assignedToController;
   late DateTime _dueDate;
   late TaskStatus _status;
-  late int _priority;
   bool _isLoading = false;
 
   @override
@@ -145,20 +144,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
                 },
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                value: _priority,
-                decoration: const InputDecoration(labelText: 'Priority'),
-                items: [1, 2, 3].map((p) {
-                  return DropdownMenuItem(
-                    value: p,
-                    child: Text('Priority $p'),
-                  );
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _priority = val);
-                },
-              ),
-              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
