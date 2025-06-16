@@ -5,6 +5,7 @@ import 'package:flutter_application_idspora/models/Event.dart';
 import 'package:flutter_application_idspora/widgets/SummaryCard.dart';
 import 'package:intl/intl.dart';
 
+import 'ProfilePage.dart';
 import 'TaskPage.dart';
 import 'EventsPage.dart';
 import 'FinancePage.dart';
@@ -22,12 +23,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final int _selectedIndex = 0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   // Data variables
   List<Event> _events = [];
   bool _isLoading = true;
   String _userName = 'Stephanie';
-  
+
   // Statistics
   int _upcomingEventsCount = 0;
   Event? _nextUpcomingEvent;
@@ -60,16 +61,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       final events = await EventController.fetchEvents();
       final now = DateTime.now();
-      
+
       // Filter upcoming events
-      final upcomingEvents = events.where((event) {
-        try {
-          final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
-          return eventDate.isAfter(now) || eventDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
-        } catch (e) {
-          return false;
-        }
-      }).toList();
+      final upcomingEvents =
+          events.where((event) {
+            try {
+              final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
+              return eventDate.isAfter(now) ||
+                  eventDate.isAtSameMomentAs(
+                    DateTime(now.year, now.month, now.day),
+                  );
+            } catch (e) {
+              return false;
+            }
+          }).toList();
 
       // Sort by date to get the next upcoming event
       upcomingEvents.sort((a, b) {
@@ -85,7 +90,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() {
         _events = events;
         _upcomingEventsCount = upcomingEvents.length;
-        _nextUpcomingEvent = upcomingEvents.isNotEmpty ? upcomingEvents.first : null;
+        _nextUpcomingEvent =
+            upcomingEvents.isNotEmpty ? upcomingEvents.first : null;
       });
     } catch (e) {
       _showSnackbar('Error loading events: $e');
@@ -114,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final eventDate = DateFormat('yyyy-MM-dd').parse(event.date);
       final now = DateTime.now();
       final difference = eventDate.difference(now).inDays;
-      
+
       if (difference == 0) {
         return 'Today';
       } else if (difference == 1) {
@@ -232,21 +238,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(width: 12),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/profile.jpeg'),
+                  fit: BoxFit.cover,
                 ),
-              ],
-              image: const DecorationImage(
-                image: AssetImage('assets/images/profile.jpeg'),
-                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -406,7 +420,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EventDetailsPage(event: _nextUpcomingEvent!),
+                  builder:
+                      (context) => EventDetailsPage(event: _nextUpcomingEvent!),
                 ),
               ).then((result) {
                 if (result == true) {
@@ -418,7 +433,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               title: _nextUpcomingEvent!.title,
               category: _nextUpcomingEvent!.category,
               timeLeft: _getTimeLeft(_nextUpcomingEvent!),
-              imagePath: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+              imagePath:
+                  'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
             ),
           )
         else
@@ -472,10 +488,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               const SizedBox(height: 8),
               Text(
                 'Check back later for new events',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -493,7 +506,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   backgroundColor: Colors.amber,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -541,7 +557,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           title: 'Creating Awesome Mobile Apps',
           category: 'UI/UX Designer',
           timeLeft: '1 Hour',
-          imagePath: 'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          imagePath:
+              'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ),
         const SizedBox(height: 24),
         _buildTaskDetails(),
@@ -582,7 +599,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.amber.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -599,10 +619,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
           const SizedBox(height: 16),
-          const TaskDetailItem(number: 1, text: 'Tentukan tanggal, waktu, dan durasi'),
+          const TaskDetailItem(
+            number: 1,
+            text: 'Tentukan tanggal, waktu, dan durasi',
+          ),
           const TaskDetailItem(number: 2, text: 'Tentukan MC dan Narasumber'),
           const TaskDetailItem(number: 3, text: 'Buat poster & konten promosi'),
-          const TaskDetailItem(number: 4, text: 'Buat dan sebar Google Form/website untuk pendaftaran'),
+          const TaskDetailItem(
+            number: 4,
+            text: 'Buat dan sebar Google Form/website untuk pendaftaran',
+          ),
         ],
       ),
     );
@@ -629,10 +655,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: const Text(
           'Go To Detail',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
       ),
     );
@@ -698,7 +721,10 @@ class EventCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF7FAFC),
                         borderRadius: BorderRadius.circular(8),
@@ -714,7 +740,10 @@ class EventCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.amber.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -749,7 +778,6 @@ class EventCard extends StatelessWidget {
     );
   }
 }
-
 
 class TaskCard extends StatelessWidget {
   final String title;
@@ -810,7 +838,10 @@ class TaskCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF7FAFC),
                         borderRadius: BorderRadius.circular(8),
@@ -826,7 +857,10 @@ class TaskCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.amber.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -866,11 +900,7 @@ class TaskDetailItem extends StatelessWidget {
   final int number;
   final String text;
 
-  const TaskDetailItem({
-    super.key,
-    required this.number,
-    required this.text,
-  });
+  const TaskDetailItem({super.key, required this.number, required this.text});
 
   @override
   Widget build(BuildContext context) {
