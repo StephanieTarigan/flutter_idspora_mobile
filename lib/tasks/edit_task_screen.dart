@@ -28,7 +28,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
     _assignedToController = TextEditingController(text: widget.task.assignedTo);
     _dueDate = widget.task.dueDate;
     _status = widget.task.status;
-    _priority = widget.task.priority;
   }
 
   @override
@@ -49,7 +48,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
       assignedTo: _assignedToController.text,
       dueDate: _dueDate,
       status: _status,
-      priority: _priority,
     );
 
     try {

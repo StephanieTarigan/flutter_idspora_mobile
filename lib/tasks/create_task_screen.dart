@@ -37,8 +37,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         dueDate: _dueDate,
         assignedTo: _assignedTo,
         status: TaskStatus.todo,
-        progress: 0.0,
-        priority: _priority,
       );
       
       // Add to global tasks
@@ -170,8 +168,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      _buildPrioritySelector(),
-                      const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -286,64 +282,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildPrioritySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Priority',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            _buildPriorityButton(1, 'Low', Colors.green),
-            const SizedBox(width: 12),
-            _buildPriorityButton(2, 'Medium', Colors.orange),
-            const SizedBox(width: 12),
-            _buildPriorityButton(3, 'High', Colors.red),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPriorityButton(int priority, String label, Color color) {
-    final isSelected = _priority == priority;
-    
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _priority = priority;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? color : Colors.white,
-            border: Border.all(
-              color: isSelected ? color : Colors.grey.shade400,
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

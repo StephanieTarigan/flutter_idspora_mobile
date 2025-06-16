@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'task_model.dart';
 import 'task_detail_screen.dart';
-import 'create_task_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
-  const TaskListScreen({super.key});
+  const TaskListScreen({Key? key}) : super(key: key);
 
   @override
   _TaskListScreenState createState() => _TaskListScreenState();
@@ -80,22 +79,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateTaskScreen(),
-            ),
-          ).then((_) {
-            setState(() {
-              tasks = globalTasks;
-            });
-          });
-        },
-      ),
+      // floatingActionButton dihapus
     );
   }
 
@@ -177,21 +161,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateTaskScreen(),
-                  ),
-                ).then((_) {
-                  setState(() {
-                    tasks = globalTasks;
-                  });
-                });
-              },
-              child: const Text('Create a Task'),
-            ),
+            // Tombol "Create a Task" dihapus
           ],
         ),
       ),
@@ -326,15 +296,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: task.progress,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(task.status.color),
-                  minHeight: 6,
-                ),
-              ),
             ],
           ),
         ),

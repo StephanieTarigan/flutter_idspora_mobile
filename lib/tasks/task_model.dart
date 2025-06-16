@@ -54,8 +54,6 @@ class Task {
   final DateTime dueDate;
   final String assignedTo;
   final TaskStatus status;
-  final double progress;
-  final int priority;
 
   Task({
     required this.id,
@@ -64,8 +62,6 @@ class Task {
     required this.dueDate,
     required this.assignedTo,
     required this.status,
-    this.progress = 0.0,
-    this.priority = 2,
   });
   
   Task copyWith({
@@ -75,8 +71,6 @@ class Task {
     String? assignedTo,
     DateTime? dueDate,
     TaskStatus? status,
-    double? progress,
-    int? priority,
   }) {
     return Task(
       id: id ?? this.id,
@@ -85,8 +79,6 @@ class Task {
       assignedTo: assignedTo ?? this.assignedTo,
       dueDate: dueDate ?? this.dueDate,
       status: status ?? this.status,
-      progress: progress ?? this.progress,
-      priority: priority ?? this.priority,
     );
   }
   static Task fromJson(Map<String, dynamic> json) {
@@ -97,10 +89,6 @@ class Task {
       dueDate: DateTime.parse(json['dueDate']),
       assignedTo: json['assignedTo'] ?? '',
       status: TaskStatusExtension.fromString(json['status'] ?? 'todo'),
-      progress: (json['progress'] is int)
-          ? (json['progress'] as int).toDouble()
-          : (json['progress'] ?? 0.0).toDouble(),
-      priority: json['priority'] ?? 2,
     );
   }
 
@@ -112,8 +100,6 @@ class Task {
       'dueDate': dueDate.toIso8601String(),
       'assignedTo': assignedTo,
       'status': status.toShortString(),
-      'progress': progress,
-      'priority': priority,
     };
   }
 }
@@ -126,8 +112,6 @@ List<Task> getSampleTasks() {
       dueDate: DateTime.now().add(const Duration(days: 2)),
       assignedTo: 'Maria',
       status: TaskStatus.todo,
-      progress: 0.3,
-      priority: 3,
     ),
     Task(
       id: '2',
@@ -136,8 +120,6 @@ List<Task> getSampleTasks() {
       dueDate: DateTime.now().add(const Duration(days: 1)),
       assignedTo: 'Agvin Amalia',
       status: TaskStatus.inProgress,
-      progress: 0.7,
-      priority: 2,
     ),
     Task(
       id: '3',
@@ -146,8 +128,6 @@ List<Task> getSampleTasks() {
       dueDate: DateTime.now(),
       assignedTo: 'Alea Atapasya',
       status: TaskStatus.done,
-      progress: 1.0,
-      priority: 3,
     ),
     Task(
       id: '4',
@@ -156,8 +136,6 @@ List<Task> getSampleTasks() {
       dueDate: DateTime.now().add(const Duration(days: 1)),
       assignedTo: 'Fathan',
       status: TaskStatus.todo,
-      progress: 0.1,
-      priority: 2,
     ),
     Task(
       id: '5',
@@ -166,8 +144,6 @@ List<Task> getSampleTasks() {
       dueDate: DateTime.now().subtract(const Duration(days: 1)),
       assignedTo: 'Alea Atapasya',
       status: TaskStatus.done,
-      progress: 1.0,
-      priority: 1,
     ),
   ];
 }

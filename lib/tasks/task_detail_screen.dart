@@ -105,8 +105,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     _buildDescriptionSection(),
                     const SizedBox(height: 24),
                     _buildDetailsSection(),
-                    const SizedBox(height: 24),
-                    _buildPrioritySection(),
                   ],
                 ),
               ),
@@ -242,52 +240,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             'Created',
             dateFormat.format(DateTime.now().subtract(const Duration(days: 5))),
             Icons.create,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrioritySection() {
-    String priorityText;
-    Color priorityColor;
-    
-    switch (_task.priority) {
-      case 3:
-        priorityText = 'High Priority';
-        priorityColor = Colors.red;
-        break;
-      case 2:
-        priorityText = 'Medium Priority';
-        priorityColor = Colors.orange;
-        break;
-      default:
-        priorityText = 'Low Priority';
-        priorityColor = Colors.green;
-    }
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: priorityColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: priorityColor.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.flag_rounded,
-            color: priorityColor,
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Text(
-            priorityText,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: priorityColor,
-            ),
           ),
         ],
       ),
