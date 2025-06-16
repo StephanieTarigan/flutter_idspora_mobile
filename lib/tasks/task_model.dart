@@ -28,6 +28,23 @@ extension TaskStatusExtension on TaskStatus {
         return const Color(0xFF66BB6A); // Green
     }
   }
+
+  String toShortString() {
+    return toString().split('.').last;
+  }
+
+  static TaskStatus fromString(String status) {
+    switch (status) {
+      case 'todo':
+        return TaskStatus.todo;
+      case 'inProgress':
+        return TaskStatus.inProgress;
+      case 'done':
+        return TaskStatus.done;
+      default:
+        return TaskStatus.todo;
+    }
+  }
 }
 
 class Task {
@@ -38,7 +55,7 @@ class Task {
   final String assignedTo;
   final TaskStatus status;
   final double progress;
-  final int priority; // 1-3, where 3 is highest
+  final int priority;
 
   Task({
     required this.id,
@@ -50,13 +67,13 @@ class Task {
     this.progress = 0.0,
     this.priority = 2,
   });
-
+  
   Task copyWith({
     String? id,
     String? title,
     String? description,
-    DateTime? dueDate,
     String? assignedTo,
+    DateTime? dueDate,
     TaskStatus? status,
     double? progress,
     int? priority,
@@ -65,15 +82,41 @@ class Task {
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
-      dueDate: dueDate ?? this.dueDate,
       assignedTo: assignedTo ?? this.assignedTo,
+      dueDate: dueDate ?? this.dueDate,
       status: status ?? this.status,
       progress: progress ?? this.progress,
       priority: priority ?? this.priority,
     );
   }
-}
+  static Task fromJson(Map<String, dynamic> json) {
+    return Task(
+      id: json['id'].toString(),
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      dueDate: DateTime.parse(json['dueDate']),
+      assignedTo: json['assignedTo'] ?? '',
+      status: TaskStatusExtension.fromString(json['status'] ?? 'todo'),
+      progress: (json['progress'] is int)
+          ? (json['progress'] as int).toDouble()
+          : (json['progress'] ?? 0.0).toDouble(),
+      priority: json['priority'] ?? 2,
+    );
+  }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'dueDate': dueDate.toIso8601String(),
+      'assignedTo': assignedTo,
+      'status': status.toShortString(),
+      'progress': progress,
+      'priority': priority,
+    };
+  }
+}
 List<Task> getSampleTasks() {
   return [
     Task(

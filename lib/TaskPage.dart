@@ -4,6 +4,9 @@ import 'tasks/task_detail_screen.dart';
 import 'tasks/create_task_screen.dart';
 import 'Widgets/BottomNavigation.dart';
 import 'Widgets/SummaryCard.dart';
+import 'controller/TaskController.dart';
+import 'tasks/edit_task_screen.dart';
+
 
 
 class TaskPage extends StatefulWidget {
@@ -256,6 +259,15 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
 
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Widget _buildTaskCard(Task task) {
     String daysLeftText;
     if (task.status == TaskStatus.done) {
@@ -287,59 +299,113 @@ class _TaskPageState extends State<TaskPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  task.title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A202C),
-                  ),
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Expanded(
+      child: Text(
+        task.title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF1A202C),
+        ),
+      ),
+    ),
+    Row(
+      children: [
+        if (task.status != TaskStatus.done) ...[
+          GestureDetector(
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditTaskPage(task: task),
+                ),
+              );
+              if (result == true) {
+                setState(() {
+                  // Refresh data jika perlu
+                });
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Edit',
+                style: TextStyle(
+                  color: Colors.amber,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
                 ),
               ),
-              Row(
-                children: [
-                  if (task.status != TaskStatus.done) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Edit',
-                        style: TextStyle(
-                          color: Colors.amber,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+        GestureDetector(
+          onTap: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                title: const Text('Delete Task', style: TextStyle(fontWeight: FontWeight.bold)),
+                content: Text('Are you sure you want to delete "${task.title}"?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
                     ),
-                    const SizedBox(width: 8),
-                  ],
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: task.status == TaskStatus.done 
-                          ? Colors.red.withOpacity(0.1)
-                          : Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      task.status == TaskStatus.done ? 'Delete' : 'Delete',
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
+                    child: const Text('Delete'),
                   ),
                 ],
               ),
-            ],
+            );
+            if (confirmed == true && task.id != null) {
+              try {
+                final success = await TaskController.deleteTask(task.id!);
+                if (success) {
+                  _showSnackbar('Task deleted successfully');
+                  setState(() {
+                    // Refresh data jika perlu
+                  });
+                } else {
+                  _showSnackbar('Failed to delete task');
+                }
+              } catch (e) {
+                _showSnackbar('Error deleting task: $e');
+              }
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
           ),
+        ),
+      ],
+    ),
+  ],
+),
           const SizedBox(height: 8),
           Text(
             '${task.dueDate.day.toString().padLeft(2, '0')}-${task.dueDate.month.toString().padLeft(2, '0')}-${task.dueDate.year} - ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}:00',

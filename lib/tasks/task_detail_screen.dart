@@ -22,23 +22,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   void _updateTaskStatus(TaskStatus newStatus) {
-    double newProgress = _task.progress;
-    
-    // Update progress based on new status
-    if (newStatus == TaskStatus.done) {
-      newProgress = 1.0;
-    } else if (newStatus == TaskStatus.inProgress && _task.status == TaskStatus.todo) {
-      newProgress = 0.5;
-    } else if (newStatus == TaskStatus.todo) {
-      newProgress = 0.0;
-    }
-    
-    setState(() {
-      _task = _task.copyWith(
-        status: newStatus,
-        progress: newProgress,
-      );
-    });
     
     // Update the task in the global list
     final index = globalTasks.indexWhere((t) => t.id == _task.id);
@@ -119,8 +102,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   children: [
                     _buildTaskHeader(),
                     const SizedBox(height: 24),
-                    _buildProgressSection(),
-                    const SizedBox(height: 24),
                     _buildDescriptionSection(),
                     const SizedBox(height: 24),
                     _buildDetailsSection(),
@@ -190,44 +171,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             ),
             const SizedBox(width: 16),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Progress',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '${(_task.progress * 100).toInt()}%',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: _task.status.color,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: LinearProgressIndicator(
-            value: _task.progress,
-            backgroundColor: Colors.grey[200],
-            valueColor: AlwaysStoppedAnimation<Color>(_task.status.color),
-            minHeight: 10,
-          ),
         ),
       ],
     );

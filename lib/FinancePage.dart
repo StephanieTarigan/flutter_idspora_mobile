@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_idspora/Widgets/SummaryCard.dart';
+import 'package:flutter_application_idspora/finance/add_budget.dart';
 import 'package:flutter_application_idspora/finance/transactionHistory.dart';
 import 'package:flutter_application_idspora/finance/index.dart';
 import 'package:flutter_application_idspora/finance/add_transaction.dart';
@@ -440,7 +441,16 @@ class _FinancePageState extends State<FinancePage> with TickerProviderStateMixin
       // Navigasi ke halaman AddTransaction
       final result = await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const Addtransaction()),
+        MaterialPageRoute(
+          builder: (context) => AddBudgetPage(
+            onBudgetCreated: (budget) {
+              // You can handle the new budget here, e.g., refresh the list or show a message
+              setState(() {
+                // Optionally add the new budget to _recentBudgets or refresh data
+              });
+            },
+          ),
+        ),
       );
       if (result == true) {
         setState(() {

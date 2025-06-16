@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_idspora/Finance/add_transaction.dart';
 
 class BudgetDetailPage extends StatefulWidget {
   final BudgetItem budgetItem;
 
-  const BudgetDetailPage({
-    super.key,
-    required this.budgetItem,
-  });
+  const BudgetDetailPage({super.key, required this.budgetItem});
 
   @override
   State<BudgetDetailPage> createState() => _BudgetDetailPageState();
 }
 
-class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProviderStateMixin {
+class _BudgetDetailPageState extends State<BudgetDetailPage>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -61,16 +60,18 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
-    
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
+
     _animationController.forward();
   }
 
@@ -99,34 +100,39 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
   void _deleteBudget() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Delete Budget',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Text('Are you sure you want to delete "${widget.budgetItem.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey[600]),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            title: const Text(
+              'Delete Budget',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              'Are you sure you want to delete "${widget.budgetItem.title}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
               ),
-            ),
-            child: const Text('Delete'),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirmed == true) {
@@ -236,7 +242,10 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -286,8 +295,12 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
   }
 
   Widget _buildSummarySection() {
-    final totalPaid = _transactions.where((t) => t.status == 'Paid').fold(0.0, (sum, t) => sum + t.amount);
-    final totalPending = _transactions.where((t) => t.status == 'Pending').fold(0.0, (sum, t) => sum + t.amount);
+    final totalPaid = _transactions
+        .where((t) => t.status == 'Paid')
+        .fold(0.0, (sum, t) => sum + t.amount);
+    final totalPending = _transactions
+        .where((t) => t.status == 'Pending')
+        .fold(0.0, (sum, t) => sum + t.amount);
     final remaining = widget.budgetItem.amount - totalPaid - totalPending;
 
     return Padding(
@@ -339,7 +352,12 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
     );
   }
 
-  Widget _buildSummaryCard(String title, double amount, Color color, IconData icon) {
+  Widget _buildSummaryCard(
+    String title,
+    double amount,
+    Color color,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -406,11 +424,24 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  _showSnackbar('Add new transaction');
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Addtransaction(),
+                    ),
+                  );
+                  if (result == true) {
+                    setState(() {
+                      // Refresh data jika perlu
+                    });
+                  }
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.amber,
                     borderRadius: BorderRadius.circular(20),
@@ -455,7 +486,7 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
   Widget _buildTransactionCard(TransactionDetail transaction) {
     Color statusColor;
     IconData statusIcon;
-    
+
     switch (transaction.status.toLowerCase()) {
       case 'paid':
         statusColor = Colors.green;
@@ -505,7 +536,10 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: categoryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -550,10 +584,7 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
             children: [
               Text(
                 transaction.date,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
               Text(
                 'Rp ${transaction.amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
@@ -576,71 +607,72 @@ class _BudgetDetailPageState extends State<BudgetDetailPage> with TickerProvider
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                child: const Icon(Icons.edit_outlined, color: Colors.amber),
-              ),
-              title: const Text('Edit Budget'),
-              onTap: () {
-                Navigator.pop(context);
-                _editBudget();
-              },
-            ),
-            ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.edit_outlined, color: Colors.amber),
+                  ),
+                  title: const Text('Edit Budget'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _editBudget();
+                  },
                 ),
-                child: const Icon(Icons.delete_outline, color: Colors.red),
-              ),
-              title: const Text('Delete Budget'),
-              onTap: () {
-                Navigator.pop(context);
-                _deleteBudget();
-              },
-            ),
-            ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.delete_outline, color: Colors.red),
+                  ),
+                  title: const Text('Delete Budget'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deleteBudget();
+                  },
                 ),
-                child: const Icon(Icons.share_outlined, color: Colors.blue),
-              ),
-              title: const Text('Share Budget'),
-              onTap: () {
-                Navigator.pop(context);
-                _showSnackbar('Share functionality');
-              },
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.share_outlined, color: Colors.blue),
+                  ),
+                  title: const Text('Share Budget'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSnackbar('Share functionality');
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 }
