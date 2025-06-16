@@ -269,202 +269,216 @@ class _TaskPageState extends State<TaskPage> {
   }
 
   Widget _buildTaskCard(Task task) {
-    String daysLeftText;
-    if (task.status == TaskStatus.done) {
-      daysLeftText = 'Completed';
+  String daysLeftText;
+  if (task.status == TaskStatus.done) {
+    daysLeftText = 'Completed';
+  } else {
+    final daysLeft = task.dueDate.difference(DateTime.now()).inDays;
+    if (daysLeft < 0) {
+      daysLeftText = 'Overdue';
     } else {
-      final daysLeft = task.dueDate.difference(DateTime.now()).inDays;
-      if (daysLeft < 0) {
-        daysLeftText = 'Overdue';
-      } else {
-        daysLeftText = '$daysLeft Day${daysLeft != 1 ? 's' : ''} Left';
-      }
+      daysLeftText = '$daysLeft Day${daysLeft != 1 ? 's' : ''} Left';
     }
+  }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Expanded(
-      child: Text(
-        task.title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF1A202C),
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
         ),
-      ),
+      ],
     ),
-    Row(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (task.status != TaskStatus.done) ...[
-          GestureDetector(
-            onTap: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditTaskPage(task: task),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                task.title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A202C),
                 ),
-              );
-              if (result == true) {
+              ),
+            ),
+            Row(
+              children: [
+                if (task.status != TaskStatus.done) ...[
+                  GestureDetector(
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditTaskPage(task: task),
+                        ),
+                      );
+                      if (result == true) {
+                        setState(() {
+                          tasks = globalTasks;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Edit',
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                GestureDetector(
+                  onTap: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        title: const Text('Delete Task', style: TextStyle(fontWeight: FontWeight.bold)),
+                        content: Text('Are you sure you want to delete "${task.title}"?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true) {
+                      try {
+                        final success = await TaskController.deleteTask(task.id);
+                        if (success) {
+                          _showSnackbar('Task deleted successfully');
+                          setState(() {
+                            globalTasks.removeWhere((t) => t.id == task.id);
+                            tasks = globalTasks;
+                          });
+                        } else {
+                          _showSnackbar('Failed to delete task');
+                        }
+                      } catch (e) {
+                        _showSnackbar('Error deleting task: $e');
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${task.dueDate.day.toString().padLeft(2, '0')}-${task.dueDate.month.toString().padLeft(2, '0')}-${task.dueDate.year} - ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}:00',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          task.assignedTo,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          daysLeftText,
+          style: TextStyle(
+            fontSize: 14,
+            color: daysLeftText == 'Overdue'
+                ? Colors.red
+                : (daysLeftText == 'Completed'
+                    ? Colors.green
+                    : Colors.amber[700]),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskDetailScreen(task: task),
+              ),
+            ).then((updatedTask) {
+              if (updatedTask != null) {
                 setState(() {
-                  // Refresh data jika perlu
+                  final index = tasks.indexWhere((t) => t.id == updatedTask.id);
+                  if (index != -1) {
+                    globalTasks[index] = updatedTask;
+                    tasks = globalTasks;
+                  }
                 });
               }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'Edit',
+            });
+          },
+          child: Row(
+            children: [
+              Text(
+                'View Details',
                 style: TextStyle(
-                  color: Colors.amber,
+                  color: Colors.amber[700],
                   fontWeight: FontWeight.w600,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-        GestureDetector(
-          onTap: () async {
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                title: const Text('Delete Task', style: TextStyle(fontWeight: FontWeight.bold)),
-                content: Text('Are you sure you want to delete "${task.title}"?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Delete'),
-                  ),
-                ],
+              const SizedBox(width: 4),
+              Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.amber[700],
+                size: 16,
               ),
-            );
-            if (confirmed == true && task.id != null) {
-              try {
-                final success = await TaskController.deleteTask(task.id!);
-                if (success) {
-                  _showSnackbar('Task deleted successfully');
-                  setState(() {
-                    // Refresh data jika perlu
-                  });
-                } else {
-                  _showSnackbar('Failed to delete task');
-                }
-              } catch (e) {
-                _showSnackbar('Error deleting task: $e');
-              }
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text(
-              'Delete',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            ),
+            ],
           ),
         ),
       ],
     ),
-  ],
-),
-          const SizedBox(height: 8),
-          Text(
-            '${task.dueDate.day.toString().padLeft(2, '0')}-${task.dueDate.month.toString().padLeft(2, '0')}-${task.dueDate.year} - ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}:00',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            task.assignedTo,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TaskDetailScreen(task: task),
-                ),
-              ).then((updatedTask) {
-                if (updatedTask != null) {
-                  setState(() {
-                    final index = tasks.indexWhere((t) => t.id == updatedTask.id);
-                    if (index != -1) {
-                      globalTasks[index] = updatedTask;
-                      tasks = globalTasks;
-                    }
-                  });
-                }
-              });
-            },
-            child: Row(
-              children: [
-                Text(
-                  'View Details',
-                  style: TextStyle(
-                    color: Colors.amber[700],
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.amber[700],
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  );
+}
 
   Widget _buildEmptyState() {
     return Center(

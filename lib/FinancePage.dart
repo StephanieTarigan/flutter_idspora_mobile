@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_application_idspora/Widgets/SummaryCard.dart';
 import 'package:flutter_application_idspora/finance/add_budget.dart';
 import 'package:flutter_application_idspora/finance/transactionHistory.dart';
@@ -18,6 +19,45 @@ class FinancePage extends StatefulWidget {
 }
 
 class _FinancePageState extends State<FinancePage> with TickerProviderStateMixin {
+  void _showAddBudgetBottomSheet() {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: AddBudgetPage(
+              onBudgetCreated: (budget) {
+                setState(() {
+                  _recentBudgets.insert(
+                    0,
+                    BudgetItem(
+                      title: budget.eventName,
+                      date: DateFormat('yyyy-MM-dd – kk:mm:ss').format(budget.createdAt),
+                      amount: budget.totalAmount,
+                      status: 'Active',
+                    ),
+                  );
+                });
+                Navigator.pop(context); // Tutup bottom sheet setelah tambah
+              },
+            ),
+          );
+        },
+      );
+    },
+  );
+}
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -423,7 +463,7 @@ class _FinancePageState extends State<FinancePage> with TickerProviderStateMixin
             ),
           ),
           Text(
-            '\$${item.amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+            '\Rp ${item.amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -437,27 +477,7 @@ class _FinancePageState extends State<FinancePage> with TickerProviderStateMixin
 
   Widget _buildFloatingActionButton() {
   return FloatingActionButton.extended(
-    onPressed: () async {
-      // Navigasi ke halaman AddTransaction
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AddBudgetPage(
-            onBudgetCreated: (budget) {
-              // You can handle the new budget here, e.g., refresh the list or show a message
-              setState(() {
-                // Optionally add the new budget to _recentBudgets or refresh data
-              });
-            },
-          ),
-        ),
-      );
-      if (result == true) {
-        setState(() {
-          // Refresh data jika perlu
-        });
-      }
-    },
+    onPressed: _showAddBudgetBottomSheet,
     backgroundColor: Colors.amber,
     foregroundColor: Colors.black,
     elevation: 8,
